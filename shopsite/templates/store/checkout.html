@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Оформление заказа{% endblock %}
+
+{% block content %}
+<h1>Оформление заказа</h1>
+
+{% if success %}
+  <div class="alert success">Спасибо! Заказ оформлен. Корзина очищена.</div>
+  <p><a href="/">Вернуться на главную</a></p>
+{% else %}
+  {% if cart_total_qty == 0 %}
+    <p>Корзина пуста. <a href="/">Добавьте товары</a></p>
+  {% else %}
+    <p>Демо-страница оформления заказа. Нажмите «Подтвердить», чтобы очистить корзину.</p>
+    <p><strong>К оплате: {{ cart_total_price }} ₽</strong></p>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn">Подтвердить</button>
+    </form>
+  {% endif %}
+{% endif %}
+{% endblock %}

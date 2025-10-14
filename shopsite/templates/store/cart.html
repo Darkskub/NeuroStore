@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Корзина{% endblock %}
+
+{% block content %}
+<h1>Корзина</h1>
+
+{% if cart_total_qty == 0 %}
+  <p>Ваша корзина пуста. <a href="/">Перейти к товарам</a></p>
+{% else %}
+  <table class="cart-table">
+    <thead>
+      <tr>
+        <th>Товар</th>
+        <th class="right">Цена</th>
+        <th class="center">Кол-во</th>
+        <th class="right">Сумма</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in cart %}
+      <tr>
+        <td class="prod-cell">
+          <div class="prod-info">
+            {% if item.product.image %}
+              <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+            {% endif %}
+            <div>
+              <div class="prod-name">{{ item.product.name }}</div>
+              <div class="muted small">{{ item.product.description|default:"" }}</div>
+            </div>
+          </div>
+        </td>
+        <td class="right">{{ item.price }} ₽</td>
+        <td class="center">
+          <form method="post" action="{% url 'store:cart_set' item.product.id %}" class="inline">
+            {% csrf_token %}
+            <input type="number" name="qty" value="{{ item.qty }}" min="0" class="qty">
+            <button class="btn btn-sm" type="submit">Обновить</button>
+          </form>
+        </td>
+        <td class="right">{{ item.subtotal }} ₽</td>
+        <td class="center">
+          <form method="post" action="{% url 'store:cart_remove' item.product.id %}">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-danger" type="submit">Удалить</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3" class="right"><strong>Итого:</strong></td>
+        <td class="right"><strong>{{ cart_total_price }} ₽</strong></td>
+        <td></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div class="cart-actions">
+    <a class="btn btn-outline" href="/">Продолжить покупки</a>
+    <a class="btn" href="/checkout/">Оформить заказ</a>
+  </div>
+{% endif %}
+{% endblock %}
