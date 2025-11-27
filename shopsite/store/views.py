@@ -46,3 +46,26 @@ def checkout(request):
         cart.clear()
         return render(request, "store/checkout.html", {"success": True})
     return render(request, "store/checkout.html", {"success": False})
+
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib import messages
+from .forms import ProductForm
+
+@staff_member_required
+def product_create(request):
+    """
+    Страница для админ-персонала: добавить товар без захода в /admin.
+    Доступно только is_staff пользователям.
+    """
+    if request.method == "POST":
+        form = ProductForm(request.POST, request.FILES)
+        if form.is_valid():
+            product = form.save()
+            messages.success(request, f"Товар «{product.name}» добавлен.")
+            return redirect("store:product_list")
+    else:
+        form = ProductForm()
+    return render(request, "store/product_form.html", {"form": form})
+
+def about(request):
+    return render(request, "store/about.html")

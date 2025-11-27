@@ -13,7 +13,18 @@
       <nav class="nav">
         <a href="/">Главная</a>
         <a href="/cart/">Корзина ({{ cart_total_qty }}) — {{ cart_total_price }} ₽</a>
-        <a href="/admin/">Админка</a>
+
+        {% if request.user.is_authenticated %}
+          {% if request.user.is_staff %}
+            <a href="/admin/">Админка</a>
+            <a href="{% url 'store:product_create' %}">Добавить товар</a>
+          {% endif %}
+          <a href="{% url 'logout' %}?next=/">Выйти ({{ request.user.username }})</a>
+        {% else %}
+          <a href="{% url 'login' %}?next={{ request.path }}">Войти</a>
+        {% endif %}
+
+        <a href="{% url 'store:about' %}">О нас</a>
       </nav>
     </div>
   </header>
