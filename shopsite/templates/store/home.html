@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}NeuroShop — Главная{% endblock %}
+
+{% block content %}
+<h1>NeuroShop</h1>
+<p class="muted">
+  NeuroShop — условная организация, занимающаяся продажей цифровых товаров и сервисов
+  на основе нейросетевых технологий. Данный сайт является учебным примером интернет-магазина,
+  демонстрирующим работу каталога, корзины и системы ролей (Гость, Клиент, Менеджер, Администратор).
+</p>
+
+<h2 style="margin-top:24px;">Последние новости</h2>
+
+{% if last_news %}
+  <div class="grid-3">
+    {% for n in last_news %}
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">{{ n.title }}</h3>
+          <div class="small muted">{{ n.created_at|date:"d.m.Y H:i" }}</div>
+          <p class="small">
+            {{ n.body|truncatechars:140 }}
+          </p>
+          <a class="btn btn-sm" href="{% url 'store:news_detail' n.slug %}">Подробнее</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>Пока нет новостей.</p>
+{% endif %}
+{% endblock %}

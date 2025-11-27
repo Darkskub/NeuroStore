@@ -1,68 +1,82 @@
 # store/cart.py
 from decimal import Decimal
-from .models import Product
+from .models import Product, ActiveCart, ActiveCartItem
 
-CART_SESSION_ID = "cart"
 
 class Cart:
+    """
+    Корзина, привязанная к пользователю и хранящаяся в БД (ActiveCart).
+    Для анонимных пользователей корзина считается пустой.
+    """
+
     def __init__(self, request):
-        self.session = request.session
-        cart = self.session.get(CART_SESSION_ID)
-        if not cart:
-            cart = self.session[CART_SESSION_ID] = {}
-        self.cart = cart
+        self.request = request
+        self.user = getattr(request, "user", None)
+        self.cart_obj = None
+
+        if self.user and self.user.is_authenticated:
+            self.cart_obj, _ = ActiveCart.objects.get_or_create(user=self.user)
 
     def add(self, product_id: int, qty: int = 1):
-        pid = str(product_id)
-        if pid not in self.cart:
-            product = Product.objects.get(pk=product_id)
-            self.cart[pid] = {"qty": 0, "price": str(product.price)}
-        self.cart[pid]["qty"] += qty
-        if self.cart[pid]["qty"] <= 0:
-            self.remove(product_id)
-        self.save()
+        if not self.cart_obj:
+            # Для анонимных просто игнорируем (у нас корзина только для клиентов).
+            return
+        product = Product.objects.get(pk=product_id)
+        item, created = ActiveCartItem.objects.get_or_create(
+            cart=self.cart_obj,
+            product=product,
+            defaults={"price": product.price, "qty": 0},
+        )
+        item.qty += qty
+        if item.qty <= 0:
+            item.delete()
+        else:
+            item.price = product.price  # на всякий случай обновим цену
+            item.save()
 
     def set(self, product_id: int, qty: int):
-        pid = str(product_id)
+        if not self.cart_obj:
+            return
+        product = Product.objects.get(pk=product_id)
         if qty <= 0:
-            self.remove(product_id)
-        else:
-            if pid not in self.cart:
-                product = Product.objects.get(pk=product_id)
-                self.cart[pid] = {"qty": 0, "price": str(product.price)}
-            self.cart[pid]["qty"] = qty
-            self.save()
+            ActiveCartItem.objects.filter(cart=self.cart_obj, product=product).delete()
+            return
+        item, created = ActiveCartItem.objects.get_or_create(
+            cart=self.cart_obj,
+            product=product,
+            defaults={"price": product.price, "qty": qty},
+        )
+        if not created:
+            item.qty = qty
+            item.price = product.price
+            item.save()
 
     def remove(self, product_id: int):
-        pid = str(product_id)
-        if pid in self.cart:
-            del self.cart[pid]
-            self.save()
+        if not self.cart_obj:
+            return
+        ActiveCartItem.objects.filter(cart=self.cart_obj, product_id=product_id).delete()
 
     def clear(self):
-        self.session[CART_SESSION_ID] = {}
-        self.session.modified = True
-
-    def save(self):
-        self.session[CART_SESSION_ID] = self.cart
-        self.session.modified = True
+        if self.cart_obj:
+            self.cart_obj.items.all().delete()
 
     def __iter__(self):
-        product_ids = self.cart.keys()
-        products = Product.objects.filter(id__in=product_ids)
-        for product in products:
-            item = self.cart[str(product.id)]
-            price = Decimal(item["price"])
-            qty = int(item["qty"])
+        if not self.cart_obj:
+            return
+        for item in self.cart_obj.items.select_related("product"):
             yield {
-                "product": product,
-                "price": price,
-                "qty": qty,
-                "subtotal": price * qty,
+                "product": item.product,
+                "price": item.price,
+                "qty": item.qty,
+                "subtotal": item.subtotal,
             }
 
     def total_qty(self):
-        return sum(int(item["qty"]) for item in self.cart.values())
+        if not self.cart_obj:
+            return 0
+        return sum(item.qty for item in self.cart_obj.items.all())
 
     def total_price(self):
-        return sum(Decimal(item["price"]) * int(item["qty"]) for item in self.cart.values())
+        if not self.cart_obj:
+            return Decimal("0.00")
+        return sum(item.subtotal for item in self.cart_obj.items.all())

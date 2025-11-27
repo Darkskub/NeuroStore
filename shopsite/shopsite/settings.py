@@ -39,7 +39,6 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                # наш процессор для количества товаров в корзине:
                 "store.context_processors.cart_summary",
             ],
         },
@@ -55,10 +54,10 @@ DATABASES = {
     }
 }
 
-AUTH_PASSWORD_VALIDATORS = []  # для простоты в dev
+AUTH_PASSWORD_VALIDATORS = []
 
 LANGUAGE_CODE = "ru"
-TIME_ZONE = "Europe/Istanbul"
+TIME_ZONE = "Europe/Moscow"
 USE_I18N = True
 USE_TZ = True
 
@@ -69,3 +68,8 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Настройки аутентификации
+LOGIN_URL = "login"
+LOGIN_REDIRECT_URL = "store:home"
+LOGOUT_REDIRECT_URL = "store:home"

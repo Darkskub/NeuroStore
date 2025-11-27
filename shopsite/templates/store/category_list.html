@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Каталог — категории{% endblock %}
+
+{% block content %}
+<h1>Каталог</h1>
+<p class="muted">Выберите категорию товаров.</p>
+
+{% if categories %}
+  <div class="grid-3">
+    {% for c in categories %}
+      <div class="card">
+        <div class="card-body">
+          <h3 class="card-title">{{ c.name }}</h3>
+          <p class="small muted">Товаров: {{ c.products.count }}</p>
+          <a class="btn btn-sm" href="{% url 'store:category_detail' c.slug %}">Перейти</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>Категории пока не созданы. Добавьте их через админ-панель.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Заказы клиентов{% endblock %}
+
+{% block content %}
+<h1>Заказы клиентов</h1>
+
+{% if orders %}
+  <table class="cart-table">
+    <thead>
+      <tr>
+        <th>№</th>
+        <th>Клиент</th>
+        <th>Дата</th>
+        <th>Статус</th>
+        <th>Состав</th>
+        <th class="right">Сумма</th>
+        <th class="center">Управление</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td>#{{ o.id }}</td>
+        <td>{{ o.user.username }}</td>
+        <td>{{ o.created_at|date:"d.m.Y H:i" }}</td>
+        <td>{{ o.get_status_display }}</td>
+        <td>
+          <ul class="small" style="padding-left:18px;">
+            {% for item in o.items.all %}
+              <li>{{ item.product.name }} — {{ item.qty }} шт. × {{ item.price }} ₽</li>
+            {% endfor %}
+          </ul>
+          {% if o.comment %}
+            <div class="small muted">Комментарий клиента: {{ o.comment }}</div>
+          {% endif %}
+        </td>
+        <td class="right">{{ o.total_price }} ₽</td>
+        <td class="center">
+          <form method="post" action="{% url 'store:manager_set_status' o.id %}" class="inline">
+            {% csrf_token %}
+            <select name="status" class="qty" style="width:auto;">
+              {% for value, label in o.STATUS_CHOICES %}
+                <option value="{{ value }}" {% if o.status == value %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-sm">OK</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>Заказов пока нет.</p>
+{% endif %}
+{% endblock %}

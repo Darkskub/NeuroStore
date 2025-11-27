@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Корзина клиента {{ cart_user.username }}{% endblock %}
+
+{% block content %}
+<h1>Корзина клиента: {{ cart_user.username }}</h1>
+
+{% if cart.items.all %}
+  <form method="post">
+    {% csrf_token %}
+
+    <table class="cart-table">
+      <thead>
+        <tr>
+          <th>Товар</th>
+          <th class="right">Цена</th>
+          <th class="center">Кол-во</th>
+          <th class="right">Сумма</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in cart.items.all %}
+        <tr>
+          <td class="prod-cell">
+            <div class="prod-info">
+              {% if item.product.image %}
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+              {% endif %}
+              <div>
+                <div class="prod-name">{{ item.product.name }}</div>
+                <div class="muted small">{{ item.product.description|default:"" }}</div>
+              </div>
+            </div>
+          </td>
+          <td class="right">{{ item.price }} ₽</td>
+          <td class="center">
+            <input type="number"
+                   name="qty_{{ item.id }}"
+                   value="{{ item.qty }}"
+                   min="0"
+                   class="qty">
+          </td>
+          <td class="right">{{ item.subtotal }} ₽</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2" class="right"><strong>Итого:</strong></td>
+          <td class="center"><strong>{{ cart.total_qty }}</strong></td>
+          <td class="right"><strong>{{ cart.total_price }} ₽</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <div class="cart-actions">
+      <button type="submit" class="btn">Сохранить изменения</button>
+      <button type="submit" class="btn btn-danger" name="clear_cart" value="1">
+        Очистить корзину
+      </button>
+      <a href="{% url 'store:manager_carts' %}" class="btn btn-outline">Назад к списку корзин</a>
+    </div>
+  </form>
+{% else %}
+  <p>У клиента сейчас нет товаров в корзине.</p>
+  <p><a href="{% url 'store:manager_carts' %}">← Вернуться к списку корзин</a></p>
+{% endif %}
+{% endblock %}

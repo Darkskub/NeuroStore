@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Каталог — {{ category.name }}{% endblock %}
+
+{% block content %}
+<h1>Категория: {{ category.name }}</h1>
+
+{% if products %}
+  <div class="grid-3">
+    {% for p in products %}
+      <div class="card">
+        <div class="thumb">
+          {% if p.image %}
+            <img src="{{ p.image.url }}" alt="{{ p.name }}">
+          {% else %}
+            <div class="noimg">Нет изображения</div>
+          {% endif %}
+        </div>
+        <div class="card-body">
+          <h3 class="card-title">{{ p.name }}</h3>
+          <p class="muted">{{ p.description|default:"" }}</p>
+          <div class="price-row">
+            <div class="price">{{ p.price }} ₽</div>
+            {% if user.is_authenticated and not user.is_staff and not user.is_superuser %}
+              <form method="post" action="{% url 'store:cart_add' p.id %}">
+                {% csrf_token %}
+                <input type="number" name="qty" value="1" min="1" class="qty">
+                <button type="submit" class="btn">В корзину</button>
+              </form>
+            {% else %}
+              <span class="small muted">Авторизуйтесь как клиент, чтобы оформить заказ.</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>В этой категории пока нет товаров.</p>
+{% endif %}
+
+<p class="small" style="margin-top:16px;">
+  <a href="{% url 'store:category_list' %}">← Ко всем категориям</a>
+</p>
+{% endblock %}

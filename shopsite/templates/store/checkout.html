@@ -6,16 +6,20 @@
 
 {% if success %}
   <div class="alert success">Спасибо! Заказ оформлен. Корзина очищена.</div>
-  <p><a href="/">Вернуться на главную</a></p>
+  <p>Номер вашего заказа: <strong>#{{ order.id }}</strong></p>
+  <p><a href="{% url 'store:my_orders' %}">Перейти к моим заказам</a> или <a href="{% url 'store:home' %}">на главную</a>.</p>
 {% else %}
   {% if cart_total_qty == 0 %}
-    <p>Корзина пуста. <a href="/">Добавьте товары</a></p>
+    <p>Корзина пуста. <a href="{% url 'store:category_list' %}">Добавьте товары</a>.</p>
   {% else %}
-    <p>Демо-страница оформления заказа. Нажмите «Подтвердить», чтобы очистить корзину.</p>
+    <p>Проверьте заказ и при необходимости добавьте комментарий.</p>
     <p><strong>К оплате: {{ cart_total_price }} ₽</strong></p>
-    <form method="post">
+    <form method="post" class="card" style="max-width:520px;padding:16px;">
       {% csrf_token %}
-      <button type="submit" class="btn">Подтвердить</button>
+      <label>Комментарий к заказу (необязательно)
+        <textarea name="comment" rows="3" class="qty" style="width:100%;"></textarea>
+      </label>
+      <button type="submit" class="btn" style="margin-top:10px;">Подтвердить заказ</button>
     </form>
   {% endif %}
 {% endif %}

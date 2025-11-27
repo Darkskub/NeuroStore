@@ -1,9 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Вход{% endblock %}
+
 {% block content %}
 <h1>Вход</h1>
 
@@ -25,10 +22,8 @@
   </div>
   <input type="hidden" name="next" value="{{ next }}">
 </form>
-{% endblock %}
-</title>
-</head>
-<body>
 
-</body>
-</html>
+<p class="small" style="margin-top:10px;">
+  Нет аккаунта? <a href="{% url 'store:register' %}">Зарегистрироваться</a>
+</p>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Новости{% endblock %}
+
+{% block content %}
+<h1>Новости</h1>
+
+{% if news_list %}
+  <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:12px;">
+    {% for n in news_list %}
+      <li class="card" style="padding:14px;">
+        <h3 class="card-title">
+          <a href="{% url 'store:news_detail' n.slug %}" style="color:inherit;text-decoration:none;">
+            {{ n.title }}
+          </a>
+        </h3>
+        <div class="small muted">{{ n.created_at|date:"d.m.Y H:i" }}</div>
+        <p class="small">{{ n.body|truncatechars:200 }}</p>
+        <a class="btn btn-sm" href="{% url 'store:news_detail' n.slug %}">Читать полностью</a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>Новостей пока нет.</p>
+{% endif %}
+{% endblock %}

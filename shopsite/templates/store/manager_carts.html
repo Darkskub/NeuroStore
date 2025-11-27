@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Корзины клиентов{% endblock %}
+
+{% block content %}
+<h1>Корзины клиентов</h1>
+
+{% if carts %}
+  <table class="cart-table">
+    <thead>
+      <tr>
+        <th>Клиент</th>
+        <th class="center">Товаров</th>
+        <th class="right">Сумма</th>
+        <th class="center">Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in carts %}
+      <tr>
+        <td>{{ c.user.username }}</td>
+        <td class="center">{{ c.total_qty }}</td>
+        <td class="right">{{ c.total_price }} ₽</td>
+        <td class="center">
+          <a class="btn btn-sm" href="{% url 'store:manager_cart_detail' c.user.id %}">
+            Открыть корзину
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>Активных корзин клиентов нет.</p>
+{% endif %}
+{% endblock %}

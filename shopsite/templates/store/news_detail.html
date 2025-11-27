@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Новость — {{ news.title }}{% endblock %}
+
+{% block content %}
+<h1>{{ news.title }}</h1>
+<div class="small muted">{{ news.created_at|date:"d.m.Y H:i" }}</div>
+<p style="margin-top:16px;white-space:pre-line;">{{ news.body }}</p>
+<p class="small" style="margin-top:16px;">
+  <a href="{% url 'store:news_list' %}">← Ко всем новостям</a>
+</p>
+{% endblock %}

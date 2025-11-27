@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Мои заказы{% endblock %}
+
+{% block content %}
+<h1>Мои заказы</h1>
+
+{% if orders %}
+  <table class="cart-table">
+    <thead>
+      <tr>
+        <th>№</th>
+        <th>Дата</th>
+        <th>Статус</th>
+        <th>Состав</th>
+        <th class="right">Сумма</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+      <tr>
+        <td>#{{ o.id }}</td>
+        <td>{{ o.created_at|date:"d.m.Y H:i" }}</td>
+        <td>{{ o.get_status_display }}</td>
+        <td>
+          <ul class="small" style="padding-left:18px;">
+            {% for item in o.items.all %}
+              <li>{{ item.product.name }} — {{ item.qty }} шт. × {{ item.price }} ₽</li>
+            {% endfor %}
+          </ul>
+          {% if o.comment %}
+            <div class="small muted">Комментарий: {{ o.comment }}</div>
+          {% endif %}
+        </td>
+        <td class="right">{{ o.total_price }} ₽</td>
+        <td class="center">
+          {% if o.status == "new" %}
+            <form method="post" action="{% url 'store:my_order_delete' o.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+            </form>
+          {% else %}
+            <span class="small muted">Редактирование недоступно</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>Вы ещё не оформляли заказы.</p>
+{% endif %}
+{% endblock %}
