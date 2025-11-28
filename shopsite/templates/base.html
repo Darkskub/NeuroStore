@@ -23,7 +23,6 @@
 
         {% if user.is_authenticated and user.is_staff and not user.is_superuser %}
           <a href="{% url 'store:manager_orders' %}">Заказы клиентов</a>
-          <a href="{% url 'store:manager_carts' %}">Корзины клиентов</a>
           <a href="{% url 'store:product_create' %}">Добавить товар</a>
         {% endif %}
 
