@@ -1,44 +1,48 @@
 {% extends "base.html" %}
 {% block title %}Пользователи{% endblock %}
-{% block content %}
-<h1>Пользователи</h1>
 
-<div style="margin:12px 0;">
-  <a class="btn" href="{% url 'store:panel_user_create_manager' %}">Создать менеджера</a>
+{% block content %}
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+  <h1 class="h3 mb-0">Пользователи</h1>
+
+  <!-- было store:panel_user_create_manager (не существует) -->
+  <a class="btn btn-primary btn-sm" href="{% url 'store:panel_user_create_manager' %}">
+  Создать менеджера
+  </a>
 </div>
 
-<table class="cart-table">
-  <thead>
-    <tr>
-      <th>Логин</th>
-      <th>Роль</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for u in users %}
-      <tr>
-        <td><strong>{{ u.username }}</strong></td>
-        <td class="muted">
-          {% if u.is_superuser %}Администратор
-          {% elif u.is_staff %}Менеджер
-          {% elif u.is_authenticated %}Клиент
-          {% else %}—{% endif %}
-        </td>
-        <td class="right">
-          {% if not u.is_superuser %}
-          <form method="post" action="{% url 'store:panel_user_delete' u.id %}" style="display:inline;">
-            {% csrf_token %}
-            <button class="btn btn-sm btn-danger" type="submit">Удалить</button>
-          </form>
-          {% else %}
-            <span class="muted small">нельзя удалить</span>
-          {% endif %}
-        </td>
-      </tr>
-    {% empty %}
-      <tr><td colspan="3" class="muted">Пользователей нет.</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
+<div class="card">
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Логин</th>
+            <th>Email</th>
+            <th>Роль</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+            <tr>
+              <td><strong>{{ u.username }}</strong></td>
+              <td class="text-body-secondary">{{ u.email|default:"—" }}</td>
+              <td>
+                {% if u.is_superuser %}
+                  <span class="badge bg-danger">Админ</span>
+                {% elif u.is_staff %}
+                  <span class="badge bg-primary">Менеджер</span>
+                {% else %}
+                  <span class="badge bg-secondary">Клиент</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="3" class="text-center text-body-secondary">Пользователей нет</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 {% endblock %}

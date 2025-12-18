@@ -1,26 +1,39 @@
 {% extends "base.html" %}
 {% block title %}Вход{% endblock %}
+
 {% block content %}
-<h1>Вход</h1>
+<div class="row justify-content-center">
+  <div class="col-12 col-md-6 col-lg-5">
+    <h1 class="h3 mb-3">Вход</h1>
 
-<form method="post" class="card" style="max-width:420px;padding:16px;">
-  {% csrf_token %}
-  <div style="display:flex;flex-direction:column;gap:10px;">
-    <label>Логин
-      <input type="text" name="username" required class="qty" style="width:100%;">
-    </label>
-    <label>Пароль
-      <input type="password" name="password" required class="qty" style="width:100%;">
-    </label>
+    <div class="card">
+      <div class="card-body">
+        <form method="post" novalidate>
+          {% csrf_token %}
 
-    {% if form.errors %}
-      <div class="alert success" style="background:#351212;border-color:#7a1f1f;">
-        Неверный логин или пароль.
+          <div class="mb-3">
+            <label class="form-label">Логин</label>
+            <input class="form-control" type="text" name="username" required autocomplete="username">
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Пароль</label>
+            <input class="form-control" type="password" name="password" required autocomplete="current-password">
+          </div>
+
+          {% if form.errors %}
+            <div class="alert alert-danger">Неверный логин или пароль.</div>
+          {% endif %}
+
+          <input type="hidden" name="next" value="{{ next }}">
+          <button class="btn btn-primary w-100" type="submit">Войти</button>
+        </form>
       </div>
-    {% endif %}
+    </div>
 
-    <button type="submit" class="btn">Войти</button>
+    <div class="text-body-secondary small mt-3">
+      Нет аккаунта? <a href="{% url 'store:signup' %}">Зарегистрироваться</a>
+    </div>
   </div>
-  <input type="hidden" name="next" value="{{ next }}">
-</form>
+</div>
 {% endblock %}

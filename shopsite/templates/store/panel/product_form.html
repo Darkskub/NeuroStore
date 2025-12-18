@@ -1,25 +1,44 @@
 {% extends "base.html" %}
 {% block title %}Товар{% endblock %}
+
 {% block content %}
-<h1>{% if mode == "create" %}Добавить товар{% else %}Изменить товар{% endif %}</h1>
+<h1 class="h3 mb-3">{% if mode == "create" %}Добавить товар{% else %}Изменить товар{% endif %}</h1>
 
-<form method="post" enctype="multipart/form-data" class="card" style="max-width:720px;padding:16px;">
-  {% csrf_token %}
-  <div style="display:flex;flex-direction:column;gap:12px;">
-    <label>Категория {{ form.category }}</label>
-    <label>Название {{ form.name }}</label>
-    <label>Цена {{ form.price }}</label>
-    <label>Изображение {{ form.image }}</label>
-    <label>Описание {{ form.description }}</label>
+<div class="card">
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data" class="row g-3" novalidate>
+      {% csrf_token %}
 
-    <div class="small muted">
-      Слаг формируется автоматически по названию.
-    </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label">Категория</label>
+        {{ form.category }}
+      </div>
 
-    <div style="display:flex;gap:10px;">
-      <button class="btn" type="submit">Сохранить</button>
-      <a class="btn btn-outline" href="{% url 'store:panel_products' %}">Отмена</a>
-    </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label">Название</label>
+        {{ form.name }}
+      </div>
+
+      <div class="col-12 col-md-4">
+        <label class="form-label">Цена</label>
+        {{ form.price }}
+      </div>
+
+      <div class="col-12 col-md-8">
+        <label class="form-label">Изображение</label>
+        {{ form.image }}
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Описание</label>
+        {{ form.description }}
+      </div>
+
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+        <a class="btn btn-outline-secondary" href="{% url 'store:panel_products' %}">Отмена</a>
+      </div>
+    </form>
   </div>
-</form>
+</div>
 {% endblock %}

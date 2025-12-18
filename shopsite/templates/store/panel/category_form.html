@@ -1,22 +1,29 @@
 {% extends "base.html" %}
 {% block title %}Категория{% endblock %}
+
 {% block content %}
-<h1>{% if mode == "create" %}Добавить категорию{% else %}Изменить категорию{% endif %}</h1>
+<h1 class="h3 mb-3">{% if mode == "create" %}Добавить категорию{% else %}Изменить категорию{% endif %}</h1>
 
-<form method="post" class="card" style="max-width:720px;padding:16px;">
-  {% csrf_token %}
-  <div style="display:flex;flex-direction:column;gap:12px;">
-    <label>Название {{ form.name }}</label>
-    <label>Родитель {{ form.parent }}</label>
+<div class="card">
+  <div class="card-body">
+    <form method="post" class="row g-3" novalidate>
+      {% csrf_token %}
 
-    <div class="small muted">
-      Слаг формируется автоматически по названию.
-    </div>
+      <div class="col-12">
+        <label class="form-label">Название</label>
+        {{ form.name }}
+      </div>
 
-    <div style="display:flex;gap:10px;">
-      <button class="btn" type="submit">Сохранить</button>
-      <a class="btn btn-outline" href="{% url 'store:panel_categories' %}">Отмена</a>
-    </div>
+      <div class="col-12">
+        <label class="form-label">Родитель</label>
+        {{ form.parent }}
+      </div>
+
+      <div class="col-12 d-flex gap-2">
+        <button class="btn btn-primary" type="submit">Сохранить</button>
+        <a class="btn btn-outline-secondary" href="{% url 'store:panel_categories' %}">Отмена</a>
+      </div>
+    </form>
   </div>
-</form>
+</div>
 {% endblock %}

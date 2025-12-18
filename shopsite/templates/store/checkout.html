@@ -1,26 +1,36 @@
 {% extends "base.html" %}
 {% block title %}Оформление заказа{% endblock %}
-
 {% block content %}
-<h1>Оформление заказа</h1>
+
+<h1 class="h3 mb-3">Оформление заказа</h1>
 
 {% if success %}
-  <div class="alert success">Спасибо! Заказ оформлен. Корзина очищена.</div>
+  <div class="alert alert-success">Спасибо! Заказ оформлен. Корзина очищена.</div>
   <p>Номер вашего заказа: <strong>#{{ order.id }}</strong></p>
-  <p><a href="{% url 'store:my_orders' %}">Перейти к моим заказам</a> или <a href="{% url 'store:home' %}">на главную</a>.</p>
+  <p>
+    <a href="{% url 'store:my_orders' %}">Перейти к моим заказам</a>
+    или <a href="{% url 'store:home' %}">на главную</a>.
+  </p>
 {% else %}
   {% if cart_total_qty == 0 %}
-    <p>Корзина пуста. <a href="{% url 'store:category_list' %}">Добавьте товары</a>.</p>
+    <div class="alert alert-info">
+      Корзина пуста. <a href="{% url 'store:product_list' %}">Перейдите в каталог</a>.
+    </div>
   {% else %}
-    <p>Проверьте заказ и при необходимости добавьте комментарий.</p>
-    <p><strong>К оплате: {{ cart_total_price }} ₽</strong></p>
-    <form method="post" class="card" style="max-width:520px;padding:16px;">
-      {% csrf_token %}
-      <label>Комментарий к заказу (необязательно)
-        <textarea name="comment" rows="3" class="qty" style="width:100%;"></textarea>
-      </label>
-      <button type="submit" class="btn" style="margin-top:10px;">Подтвердить заказ</button>
-    </form>
+    <div class="card">
+      <div class="card-body">
+        <p class="mb-2">К оплате: <strong>{{ cart_total_price }} ₽</strong></p>
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label">Комментарий к заказу (необязательно)</label>
+            <textarea name="comment" rows="3" class="form-control"></textarea>
+          </div>
+          <button class="btn btn-success" type="submit">Оформить заказ</button>
+        </form>
+      </div>
+    </div>
   {% endif %}
 {% endif %}
+
 {% endblock %}

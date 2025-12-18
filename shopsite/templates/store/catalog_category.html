@@ -1,38 +1,50 @@
 {% extends "base.html" %}
 {% block title %}Категория: {{ category.name }}{% endblock %}
+
 {% block content %}
-<h1>{{ category.name }}</h1>
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+  <div>
+    <h1 class="h3 mb-1">{{ category.name }}</h1>
+    <div class="text-body-secondary small">Товаров: {{ products|length }}</div>
+  </div>
+  <a class="btn btn-sm btn-outline-secondary" href="{% url 'store:product_list' %}">← В каталог</a>
+</div>
 
-<div class="grid-3">
+<div class="row row-cols-1 row-cols-md-3 g-4">
   {% for p in products %}
-  <div class="card">
-    <div class="thumb">
-      {% if p.image %}
-        <img src="{{ p.image.url }}" alt="{{ p.name }}">
-      {% else %}
-        <div class="noimg">Нет изображения</div>
-      {% endif %}
-    </div>
-    <div class="card-body">
-      <h3 class="card-title">{{ p.name }}</h3>
-      <p class="muted">{{ p.description|default:"" }}</p>
-      <div class="price-row">
-        <div class="price">{{ p.price }} ₽</div>
-
-        {% if request.user.is_authenticated and not request.user.is_staff and not request.user.is_superuser %}
-          <form method="post" action="{% url 'store:cart_add' p.id %}">
-            {% csrf_token %}
-            <input type="number" name="qty" value="1" min="1" class="qty">
-            <button type="submit" class="btn">В корзину</button>
-          </form>
+    <div class="col">
+      <div class="card h-100">
+        {% if p.image %}
+          <img src="{{ p.image.url }}" class="card-img-top" alt="{{ p.name }}" style="height:220px;object-fit:cover;">
         {% else %}
-          <span class="small muted">Войдите как клиент, чтобы добавить в корзину.</span>
+          <div class="d-flex align-items-center justify-content-center bg-body-tertiary border-bottom" style="height:220px;">
+            <span class="text-body-secondary small">Нет изображения</span>
+          </div>
         {% endif %}
+
+        <div class="card-body">
+          <h5 class="card-title mb-1">{{ p.name }}</h5>
+          <p class="card-text text-body-secondary">{{ p.description|default:""|truncatechars:140 }}</p>
+
+          <div class="d-flex align-items-center justify-content-between mt-3">
+            <div class="fw-bold">{{ p.price }} ₽</div>
+
+            {% if request.user.is_authenticated and not request.user.is_staff and not request.user.is_superuser %}
+              <form method="post" action="{% url 'store:cart_add' p.id %}" class="d-flex gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                <input class="form-control form-control-sm" style="width:86px" type="number" name="qty" value="1" min="1">
+                <button class="btn btn-primary btn-sm" type="submit">В корзину</button>
+              </form>
+            {% else %}
+              <a class="btn btn-outline-secondary btn-sm" href="{% url 'login' %}?next={{ request.path }}">Войти</a>
+            {% endif %}
+          </div>
+        </div>
       </div>
     </div>
-  </div>
   {% empty %}
-    <p class="muted">В этой категории пока нет товаров.</p>
+    <div class="col-12"><div class="alert alert-secondary">В этой категории пока нет товаров.</div></div>
   {% endfor %}
 </div>
 {% endblock %}

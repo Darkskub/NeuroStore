@@ -1,59 +1,53 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 
-from .models import Product, Category, News
+from .models import Category, Product, News, Order
 
 
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
-        # slug НЕ указываем, он AutoSlugField и заполняется сам
-        fields = ["name", "parent"]
-        widgets = {
-            "name": forms.TextInput(attrs={"class": "qty", "style": "width:100%"}),
-            "parent": forms.Select(attrs={"class": "qty", "style": "width:100%"}),
-        }
+        fields = ("name", "parent")
 
 
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        # slug НЕ указываем, он AutoSlugField и заполняется сам
-        fields = ["category", "name", "price", "image", "description"]
-        widgets = {
-            "category": forms.Select(attrs={"class": "qty", "style": "width:100%"}),
-            "name": forms.TextInput(attrs={"class": "qty", "style": "width:100%"}),
-            "price": forms.NumberInput(attrs={"class": "qty", "step": "0.01", "style": "width:100%"}),
-            "description": forms.Textarea(attrs={"class": "qty", "rows": 4, "style": "width:100%"}),
-        }
+        fields = ("category", "name", "price", "image", "description")
 
 
 class NewsForm(forms.ModelForm):
     class Meta:
         model = News
-        # slug НЕ указываем, он AutoSlugField и заполняется сам
-        fields = ["title", "body", "is_published"]
-        widgets = {
-            "title": forms.TextInput(attrs={"class": "qty", "style": "width:100%"}),
-            "body": forms.Textarea(attrs={"class": "qty", "rows": 8, "style": "width:100%"}),
-            "is_published": forms.CheckboxInput(attrs={"style": "transform:scale(1.2);"}),
-        }
+        fields = ("title", "body", "is_published")
 
 
-class ManagerCreateForm(UserCreationForm):
-    username = forms.CharField(widget=forms.TextInput(attrs={"class": "qty", "style": "width:100%"}))
-    password1 = forms.CharField(label="Пароль", widget=forms.PasswordInput(attrs={"class": "qty", "style": "width:100%"}))
-    password2 = forms.CharField(label="Повтор пароля", widget=forms.PasswordInput(attrs={"class": "qty", "style": "width:100%"}))
+class SignUpForm(UserCreationForm):
+    email = forms.EmailField(label="Email", required=False)
 
     class Meta:
         model = User
-        fields = ("username",)
+        fields = ("username", "email", "password1", "password2")
+
+
+class ManagerCreateForm(UserCreationForm):
+    email = forms.EmailField(label="Email", required=False)
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "password1", "password2")
 
     def save(self, commit=True):
         user = super().save(commit=False)
+        user.email = self.cleaned_data.get("email") or ""
         user.is_staff = True
-        user.is_superuser = False
         if commit:
             user.save()
         return user
+
+
+class OrderStatusForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ("status",)

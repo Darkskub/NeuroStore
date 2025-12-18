@@ -1,63 +1,92 @@
-<!DOCTYPE html>
+{% load static %}
+<!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>{% block title %}Магазин{% endblock %}</title>
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="/static/store/styles.css" rel="stylesheet">
+
+  <title>{% block title %}NeuroShop{% endblock %}</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Твой кастомный CSS (теперь НЕ ломает Bootstrap) -->
+  <link rel="stylesheet" href="{% static 'store/styles.css' %}">
 </head>
-<body>
-  <header class="site-header">
-    <div class="container header-flex">
-      <a class="logo" href="{% url 'store:home' %}">NeuroShop</a>
 
-      <nav class="nav">
-        <a href="{% url 'store:home' %}">Главная</a>
-        <a href="{% url 'store:product_list' %}">Каталог</a>
-        <a href="{% url 'store:news_list' %}">Новости</a>
-        <a href="{% url 'store:about' %}">Контакты</a>
+<body class="bg-light text-dark d-flex flex-column min-vh-100">
 
-        {% if request.user.is_authenticated and not request.user.is_staff and not request.user.is_superuser %}
-          <a href="{% url 'store:my_orders' %}">Мои заказы</a>
+<header class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand fw-semibold" href="{% url 'store:home' %}">NeuroShop</a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
+            aria-controls="mainNav" aria-expanded="false" aria-label="Переключить навигацию">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="{% url 'store:home' %}">Главная</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'store:news_list' %}">Новости</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'store:category_list' %}">Каталог</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'store:contacts' %}">Контакты</a></li>
+
+        {% if user.is_authenticated and user.is_staff and not user.is_superuser %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'store:manager_orders' %}">Заказы клиентов</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'store:product_create' %}">Добавить товар</a></li>
         {% endif %}
 
-        {% if request.user.is_authenticated and not request.user.is_staff and not request.user.is_superuser %}
-          <a href="{% url 'store:cart_detail' %}">Корзина ({{ cart_total_qty }}) — {{ cart_total_price }} ₽</a>
+        {% if user.is_superuser %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'store:panel_dashboard' %}">Панель</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'admin:index' %}">Админка</a></li>
         {% endif %}
+      </ul>
 
-        {% if request.user.is_authenticated %}
-          {% if request.user.is_staff or request.user.is_superuser %}
-            <a href="{% url 'store:manager_orders' %}">Заказы клиентов</a>
+      <div class="d-flex gap-2 align-items-center">
+        {% if user.is_authenticated %}
+          {% if not user.is_staff and not user.is_superuser %}
+            <a class="btn btn-outline-light btn-sm" href="{% url 'store:cart' %}">Корзина</a>
+            <a class="btn btn-outline-light btn-sm" href="{% url 'store:my_orders' %}">Мои заказы</a>
           {% endif %}
-          {% if request.user.is_superuser %}
-            <a href="{% url 'store:panel_dashboard' %}">Панель администратора</a>
-            <a class="nav-link" href="{% url 'admin:index' %}">Админ-панель Django</a>
-          {% endif %}
-          <a href="{% url 'logout' %}?next=/">Выйти ({{ request.user.username }})</a>
+          <a class="btn btn-light btn-sm" href="{% url 'logout' %}?next=/">Выйти ({{ user.username }})</a>
         {% else %}
-          <a href="{% url 'login' %}?next={{ request.path }}">Войти</a>
-          <a class="btn btn-sm btn-primary" href="{% url 'store:signup' %}">Регистрация</a>
+          <a class="btn btn-outline-light btn-sm" href="{% url 'login' %}?next={{ request.path }}">Войти</a>
+          <a class="btn btn-primary btn-sm" href="{% url 'store:signup' %}">Регистрация</a>
         {% endif %}
-      </nav>
+      </div>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main class="container">
-    {% if messages %}
+<main class="container py-4 flex-grow-1">
+
+  {% if messages %}
+    <div class="mb-3">
       {% for message in messages %}
-        <div class="alert success" style="{% if message.tags == 'error' %}background:#351212;border-color:#7a1f1f;{% endif %} margin-top:16px;">
-          {{ message }}
-        </div>
+        {% if message.tags == "error" %}
+          <div class="alert alert-danger mb-2">{{ message }}</div>
+        {% elif message.tags == "warning" %}
+          <div class="alert alert-warning mb-2">{{ message }}</div>
+        {% elif message.tags == "info" %}
+          <div class="alert alert-info mb-2">{{ message }}</div>
+        {% else %}
+          <div class="alert alert-success mb-2">{{ message }}</div>
+        {% endif %}
       {% endfor %}
-    {% endif %}
-
-    {% block content %}{% endblock %}
-  </main>
-
-  <footer class="site-footer">
-    <div class="container small">
-      Учебный проект Django. Изображения и цены демонстрационные.
     </div>
-  </footer>
+  {% endif %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="bg-dark text-light py-3 mt-auto">
+  <div class="container small d-flex justify-content-between flex-wrap gap-2">
+    <div>© {{ now|date:"Y" }} NeuroShop</div>
+    <div class="opacity-75">Учебный проект на Django</div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

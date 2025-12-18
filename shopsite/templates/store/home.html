@@ -1,26 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Главная{% endblock %}
-
 {% block content %}
-  <h1>Главная</h1>
 
-  <section class="card" style="padding:16px;">
-    <h3 style="margin-top:0;">Последние новости</h3>
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h1 class="h3 mb-0">Новости</h1>
+  <a class="btn btn-outline-secondary btn-sm" href="{% url 'store:news_list' %}">Все новости</a>
+</div>
 
-    {% if news %}
-      <div style="display:grid; gap:12px;">
-        {% for n in news %}
-          <article class="card" style="padding:12px;">
-            <h4 style="margin:0 0 6px 0;">{{ n.title }}</h4>
-            <div class="muted" style="font-size:12px; margin-bottom:8px;">
-              {{ n.created_at|date:"d.m.Y H:i" }}
-            </div>
-            <div>{{ n.body|linebreaks }}</div>
-          </article>
-        {% endfor %}
+<div class="row g-3">
+  {% for n in news %}
+    <div class="col-12 col-md-4">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">{{ n.title }}</h5>
+          <p class="text-muted small mb-2">{{ n.created_at }}</p>
+          <a class="btn btn-sm btn-primary" href="{% url 'store:news_detail' n.slug %}">Читать</a>
+        </div>
       </div>
-    {% else %}
-      <p class="muted">Новостей пока нет.</p>
-    {% endif %}
-  </section>
+    </div>
+  {% empty %}
+    <div class="col-12"><div class="alert alert-info">Новостей пока нет.</div></div>
+  {% endfor %}
+</div>
+
 {% endblock %}

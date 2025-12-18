@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Заказы клиентов{% endblock %}
+{% block content %}
+
+<h1 class="h3 mb-3">Заказы клиентов</h1>
+
+<div class="table-responsive">
+  <table class="table table-striped align-middle">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Клиент</th>
+        <th>Дата</th>
+        <th>Статус</th>
+        <th class="text-end">Сумма</th>
+        <th class="text-end">Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for o in orders %}
+        <tr>
+          <td><strong>#{{ o.id }}</strong></td>
+          <td>{{ o.user.username }}</td>
+          <td class="text-muted small">{{ o.created_at }}</td>
+          <td><span class="badge bg-secondary">{{ o.get_status_display }}</span></td>
+          <td class="text-end"><strong>{{ o.total_price }} ₽</strong></td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="{% url 'store:manager_order_status' o.id %}">
+              Статус
+            </a>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6" class="text-center text-muted">Заказов нет</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

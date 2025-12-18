@@ -2,65 +2,95 @@
 {% block title %}Заказы клиентов{% endblock %}
 
 {% block content %}
-<h1>Заказы клиентов</h1>
+<h1 class="h3 mb-3">Заказы клиентов</h1>
 
 {% if orders %}
-  {% for o in orders %}
-    <section class="card" style="padding:16px;margin-top:16px;">
-
-      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-        <div>
-          <strong>Заказ #{{ o.id }}</strong><br>
-          <span class="muted">{{ o.created_at|date:"d.m.Y H:i" }}</span><br>
-          <span class="muted">Клиент: {{ o.user.username }}</span>
-        </div>
-
-        <form method="post" action="{% url 'store:manager_order_status' o.id %}">
-          {% csrf_token %}
-          <select name="status" onchange="this.form.submit()">
-            {% for val, label in o.STATUS_CHOICES %}
-              <option value="{{ val }}" {% if o.status == val %}selected{% endif %}>
-                {{ label }}
-              </option>
-            {% endfor %}
-          </select>
-        </form>
-      </div>
-
-      {% if o.comment %}
-        <p class="muted" style="margin-top:10px;">
-          <strong>Комментарий:</strong><br>{{ o.comment }}
-        </p>
-      {% endif %}
-
-      <table class="cart-table" style="margin-top:12px;">
-        <thead>
-          <tr>
-            <th>Товар</th>
-            <th class="right">Цена</th>
-            <th class="right">Кол-во</th>
-            <th class="right">Сумма</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for it in o.items.all %}
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped align-middle mb-0">
+          <thead>
             <tr>
-              <td>{{ it.product.name }}</td>
-              <td class="right">{{ it.price }} ₽</td>
-              <td class="right">{{ it.qty }}</td>
-              <td class="right">{{ it.subtotal }} ₽</td>
+              <th>#</th>
+              <th>Клиент</th>
+              <th>Дата</th>
+              <th style="width:220px;">Статус</th>
+              <th class="text-end">Сумма</th>
+              <th class="text-end">Детали</th>
             </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {% for o in orders %}
+              <tr>
+                <td class="fw-semibold">#{{ o.id }}</td>
+                <td>{{ o.user.username }}</td>
+                <td class="text-body-secondary">{{ o.created_at|date:"d.m.Y H:i" }}</td>
+                <td>
+                  <form method="post" action="{% url 'store:manager_order_status' o.id %}" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <select class="form-select form-select-sm" name="status" onchange="this.form.submit()">
+                      {% for val, label in o.STATUS_CHOICES %}
+                        <option value="{{ val }}" {% if o.status == val %}selected{% endif %}>{{ label }}</option>
+                      {% endfor %}
+                    </select>
+                  </form>
+                </td>
+                <td class="text-end fw-semibold">{{ o.total }} ₽</td>
+                <td class="text-end">
+                  <button class="btn btn-outline-primary btn-sm" type="button"
+                          data-bs-toggle="collapse" data-bs-target="#ord{{ o.id }}">
+                    Открыть
+                  </button>
+                </td>
+              </tr>
 
-      <div style="text-align:right;margin-top:10px;">
-        <strong>Итого: {{ o.total }} ₽</strong>
+              <tr class="collapse" id="ord{{ o.id }}">
+                <td colspan="6">
+                  <div class="p-3">
+                    {% if o.comment %}
+                      <div class="alert alert-secondary mb-3">
+                        <strong>Комментарий:</strong> {{ o.comment }}
+                      </div>
+                    {% endif %}
+
+                    <div class="table-responsive">
+                      <table class="table table-sm table-striped align-middle mb-0">
+                        <thead>
+                          <tr>
+                            <th>Товар</th>
+                            <th class="text-end">Цена</th>
+                            <th class="text-end">Кол-во</th>
+                            <th class="text-end">Сумма</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for it in o.items.all %}
+                            <tr>
+                              <td class="fw-semibold">{{ it.product.name }}</td>
+                              <td class="text-end">{{ it.price }} ₽</td>
+                              <td class="text-end">{{ it.qty }}</td>
+                              <td class="text-end fw-semibold">{{ it.subtotal }} ₽</td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                        <tfoot>
+                          <tr>
+                            <td colspan="3" class="text-end fw-semibold">Итого:</td>
+                            <td class="text-end fw-bold">{{ o.total }} ₽</td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-
-    </section>
-  {% endfor %}
+    </div>
+  </div>
 {% else %}
-  <p class="muted">Заказов пока нет.</p>
+  <div class="alert alert-secondary">Заказов пока нет.</div>
 {% endif %}
 {% endblock %}

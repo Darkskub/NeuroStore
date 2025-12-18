@@ -1,99 +1,74 @@
-# store/cart.py
-from decimal import Decimal
-from .models import Product, ActiveCart, ActiveCartItem
-from .models import Order, OrderItem
+from django.db import transaction
+from .models import ActiveCart, ActiveCartItem, Product, Order, OrderItem
 
 
 class Cart:
-    """
-    Корзина, привязанная к пользователю и хранящаяся в БД (ActiveCart).
-    Для анонимных пользователей корзина считается пустой.
-    """
-
     def __init__(self, request):
         self.request = request
-        self.user = getattr(request, "user", None)
+        self.user = request.user
         self.cart_obj = None
 
-        if self.user and self.user.is_authenticated:
+        if self.user.is_authenticated:
             self.cart_obj, _ = ActiveCart.objects.get_or_create(user=self.user)
 
-    def add(self, product_id: int, qty: int = 1):
-        if not self.cart_obj:
-            # Для анонимных просто игнорируем (у нас корзина только для клиентов).
-            return
-        product = Product.objects.get(pk=product_id)
-        item, created = ActiveCartItem.objects.get_or_create(
-            cart=self.cart_obj,
-            product=product,
-            defaults={"price": product.price, "qty": 0},
-        )
-        item.qty += qty
-        if item.qty <= 0:
-            item.delete()
-        else:
-            item.price = product.price  # на всякий случай обновим цену
-            item.save()
+    @property
+    def is_enabled(self) -> bool:
+        return self.user.is_authenticated and self.cart_obj is not None
 
-    def set(self, product_id: int, qty: int):
-        if not self.cart_obj:
+    def items(self):
+        if not self.is_enabled:
+            return ActiveCartItem.objects.none()
+        return self.cart_obj.items.select_related("product").all()
+
+    @property
+    def total_qty(self) -> int:
+        if not self.is_enabled:
+            return 0
+        return sum(i.qty for i in self.items())
+
+    @property
+    def total_price(self):
+        if not self.is_enabled:
+            return 0
+        return sum(i.subtotal for i in self.items())
+
+    def add(self, product: Product, qty: int = 1):
+        if not self.is_enabled:
             return
-        product = Product.objects.get(pk=product_id)
-        if qty <= 0:
-            ActiveCartItem.objects.filter(cart=self.cart_obj, product=product).delete()
-            return
+
+        qty = max(int(qty), 1)
         item, created = ActiveCartItem.objects.get_or_create(
             cart=self.cart_obj,
             product=product,
             defaults={"price": product.price, "qty": qty},
         )
         if not created:
-            item.qty = qty
+            item.qty += qty
             item.price = product.price
-            item.save()
+            item.save(update_fields=["qty", "price"])
 
-    def remove(self, product_id: int):
-        if not self.cart_obj:
+    def remove_item(self, item_id: int):
+        if not self.is_enabled:
             return
-        ActiveCartItem.objects.filter(cart=self.cart_obj, product_id=product_id).delete()
+        ActiveCartItem.objects.filter(cart=self.cart_obj, id=item_id).delete()
 
     def clear(self):
-        if self.cart_obj:
-            self.cart_obj.items.all().delete()
-
-    def __iter__(self):
-        if not self.cart_obj:
+        if not self.is_enabled:
             return
-        for item in self.cart_obj.items.select_related("product"):
-            yield {
-                "product": item.product,
-                "price": item.price,
-                "qty": item.qty,
-                "subtotal": item.subtotal,
-            }
+        self.cart_obj.items.all().delete()
 
-    def total_qty(self):
-        if not self.cart_obj:
-            return 0
-        return sum(item.qty for item in self.cart_obj.items.all())
+    @transaction.atomic
+    def create_order(self, comment: str = "") -> Order:
+        if not self.is_enabled:
+            raise RuntimeError("Cart is disabled for anonymous users")
 
-    def total_price(self):
-        if not self.cart_obj:
-            return Decimal("0.00")
-        return sum(item.subtotal for item in self.cart_obj.items.all())
-
-    def create_order(self, comment=""):
-        order = Order.objects.create(
-            user=self.user,
-            comment=comment
-        )
-
-        for item in self:
+        order = Order.objects.create(user=self.user, comment=comment or "")
+        for i in self.items():
             OrderItem.objects.create(
                 order=order,
-                product=item["product"],
-                price=item["price"],
-                qty=item["qty"]
+                product=i.product,
+                price=i.price,
+                qty=i.qty,
             )
-
+        self.clear()
         return order

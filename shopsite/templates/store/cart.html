@@ -2,65 +2,83 @@
 {% block title %}Корзина{% endblock %}
 
 {% block content %}
-<h1>Корзина</h1>
+<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+  <h1 class="h3 mb-0">Корзина</h1>
+  <a class="btn btn-sm btn-outline-secondary" href="{% url 'store:product_list' %}">← В каталог</a>
+</div>
 
 {% if cart_total_qty == 0 %}
-  <p>Ваша корзина пуста. <a href="/">Перейти к товарам</a></p>
+  <div class="alert alert-secondary">
+    Ваша корзина пуста.
+    <a class="alert-link" href="{% url 'store:product_list' %}">Перейти к покупкам</a>
+  </div>
 {% else %}
-  <table class="cart-table">
-    <thead>
-      <tr>
-        <th>Товар</th>
-        <th class="right">Цена</th>
-        <th class="center">Кол-во</th>
-        <th class="right">Сумма</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in cart %}
-      <tr>
-        <td class="prod-cell">
-          <div class="prod-info">
-            {% if item.product.image %}
-              <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
-            {% endif %}
-            <div>
-              <div class="prod-name">{{ item.product.name }}</div>
-              <div class="muted small">{{ item.product.description|default:"" }}</div>
-            </div>
-          </div>
-        </td>
-        <td class="right">{{ item.price }} ₽</td>
-        <td class="center">
-          <form method="post" action="{% url 'store:cart_set' item.product.id %}" class="inline">
-            {% csrf_token %}
-            <input type="number" name="qty" value="{{ item.qty }}" min="0" class="qty">
-            <button class="btn btn-sm" type="submit">Обновить</button>
-          </form>
-        </td>
-        <td class="right">{{ item.subtotal }} ₽</td>
-        <td class="center">
-          <form method="post" action="{% url 'store:cart_remove' item.product.id %}">
-            {% csrf_token %}
-            <button class="btn btn-sm btn-danger" type="submit">Удалить</button>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-    <tfoot>
-      <tr>
-        <td colspan="3" class="right"><strong>Итого:</strong></td>
-        <td class="right"><strong>{{ cart_total_price }} ₽</strong></td>
-        <td></td>
-      </tr>
-    </tfoot>
-  </table>
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped align-middle mb-0">
+          <thead>
+            <tr>
+              <th>Товар</th>
+              <th class="text-end">Цена</th>
+              <th style="width:220px;">Количество</th>
+              <th class="text-end">Сумма</th>
+              <th class="text-end">Удалить</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in cart %}
+              <tr>
+                <td>
+                  <div class="d-flex gap-3 align-items-center">
+                    {% if item.product.image %}
+                      <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}"
+                           style="width:64px;height:64px;object-fit:cover;border-radius:12px;">
+                    {% endif %}
+                    <div>
+                      <div class="fw-semibold">{{ item.product.name }}</div>
+                      <div class="text-body-secondary small">{{ item.product.description|default:""|truncatechars:90 }}</div>
+                    </div>
+                  </div>
+                </td>
 
-  <div class="cart-actions">
-    <a class="btn btn-outline" href="/">Продолжить покупки</a>
-    <a class="btn" href="/checkout/">Оформить заказ</a>
+                <td class="text-end">{{ item.price }} ₽</td>
+
+                <td>
+                  <form method="post" action="{% url 'store:cart_set' item.product.id %}" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <input class="form-control form-control-sm" style="width:92px;" type="number" name="qty" value="{{ item.qty }}" min="0">
+                    <button class="btn btn-outline-primary btn-sm" type="submit">Обновить</button>
+                  </form>
+                </td>
+
+                <td class="text-end fw-semibold">{{ item.subtotal }} ₽</td>
+
+                <td class="text-end">
+                  <form method="post" action="{% url 'store:cart_remove' item.product.id %}">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger btn-sm" type="submit">Удалить</button>
+                  </form>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+
+          <tfoot>
+            <tr>
+              <td colspan="3" class="text-end fw-semibold">Итого:</td>
+              <td class="text-end fw-bold">{{ cart_total_price }} ₽</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="d-flex justify-content-end gap-2 mt-3">
+        <a class="btn btn-outline-secondary" href="{% url 'store:product_list' %}">Продолжить покупки</a>
+        <a class="btn btn-primary" href="{% url 'store:checkout' %}">Оформить заказ</a>
+      </div>
+    </div>
   </div>
 {% endif %}
 {% endblock %}

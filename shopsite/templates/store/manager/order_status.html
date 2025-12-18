@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Статус заказа #{{ order.id }}{% endblock %}
+{% block content %}
+
+<h1 class="h4 mb-3">Статус заказа #{{ order.id }}</h1>
+
+<div class="card">
+  <div class="card-body">
+    <p class="mb-2"><strong>Клиент:</strong> {{ order.user.username }}</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Статус</label>
+        {{ form.status }}
+        <div class="text-danger small">{{ form.status.errors }}</div>
+      </div>
+
+      <button class="btn btn-primary" type="submit">Сохранить</button>
+      <a class="btn btn-outline-secondary" href="{% url 'store:manager_orders' %}">Назад</a>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

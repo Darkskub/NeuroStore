@@ -2,29 +2,19 @@
 {% block title %}Контакты{% endblock %}
 
 {% block content %}
-<h1>Контакты</h1>
-
-<section class="card" style="padding:16px; margin-top:12px;">
-  <h3>Организация</h3>
-  <p class="muted">
-    ООО «NeuroShop» — учебная организация, специализирующаяся на демонстрации
-    веб-технологий и систем электронной коммерции.
-  </p>
-  <ul>
-    <li><strong>Адрес:</strong> г. Примерск, ул. Академическая, д. 1</li>
-    <li><strong>Телефон:</strong> +7 (999) 000-00-00</li>
-    <li><strong>Email:</strong> info@neuroshop.example</li>
-  </ul>
-</section>
-
-<section class="card" style="padding:16px; margin-top:16px;">
-  <h3>Разработчик сайта</h3>
-  <p class="muted">
-    Сайт разработан в рамках учебного проекта по дисциплине «Веб-программирование».
-  </p>
-  <ul>
-    <li><strong>ФИО студента:</strong> Кузавка Никита Андреевич</li>
-    <li><strong>Группа:</strong> 0434-05</li>
-  </ul>
-</section>
+<div class="row justify-content-center">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-body">
+        <h1 class="h3 mb-3">Контакты</h1>
+        <p class="mb-2"><strong>NeuroShop</strong> — учебный проект.</p>
+        <ul class="mb-0">
+          <li>Email: example@neuroshop.local</li>
+          <li>Телефон: +7 (000) 000-00-00</li>
+          <li>Адрес: —</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

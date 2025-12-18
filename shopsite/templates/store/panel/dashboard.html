@@ -1,27 +1,44 @@
 {% extends "base.html" %}
 {% block title %}Панель администратора{% endblock %}
+
 {% block content %}
-<h1>Панель администратора</h1>
+<h1 class="h3 mb-3">Панель администратора</h1>
 
-<div class="grid-3">
-  <a class="card" style="padding:16px; text-decoration:none; color:inherit;" href="{% url 'store:panel_categories' %}">
-    <h3 style="margin:0 0 6px;">Категории</h3>
-    <div class="muted small">Добавить / изменить / удалить</div>
-  </a>
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+  <div class="col">
+    <a class="card h-100 text-decoration-none" href="{% url 'store:panel_categories' %}">
+      <div class="card-body">
+        <h5 class="card-title mb-1">Категории</h5>
+        <div class="text-body-secondary small">Добавить / изменить / удалить</div>
+      </div>
+    </a>
+  </div>
 
-  <a class="card" style="padding:16px; text-decoration:none; color:inherit;" href="{% url 'store:panel_products' %}">
-    <h3 style="margin:0 0 6px;">Товары</h3>
-    <div class="muted small">Добавить / изменить / удалить</div>
-  </a>
+  <div class="col">
+    <a class="card h-100 text-decoration-none" href="{% url 'store:panel_products' %}">
+      <div class="card-body">
+        <h5 class="card-title mb-1">Товары</h5>
+        <div class="text-body-secondary small">Добавить / изменить / удалить</div>
+      </div>
+    </a>
+  </div>
 
-  <a class="card" style="padding:16px; text-decoration:none; color:inherit;" href="{% url 'store:panel_news' %}">
-    <h3 style="margin:0 0 6px;">Новости</h3>
-    <div class="muted small">Добавить / изменить / удалить</div>
-  </a>
+  <div class="col">
+    <a class="card h-100 text-decoration-none" href="{% url 'store:panel_news' %}">
+      <div class="card-body">
+        <h5 class="card-title mb-1">Новости</h5>
+        <div class="text-body-secondary small">Публикации на главной</div>
+      </div>
+    </a>
+  </div>
 
-  <a class="card" style="padding:16px; text-decoration:none; color:inherit;" href="{% url 'store:panel_users' %}">
-    <h3 style="margin:0 0 6px;">Пользователи</h3>
-    <div class="muted small">Создать менеджера / удалить</div>
-  </a>
+  <div class="col">
+    <a class="card h-100 text-decoration-none" href="{% url 'store:panel_users' %}">
+      <div class="card-body">
+        <h5 class="card-title mb-1">Пользователи</h5>
+        <div class="text-body-secondary small">Создать менеджера / удалить</div>
+      </div>
+    </a>
+  </div>
 </div>
 {% endblock %}
