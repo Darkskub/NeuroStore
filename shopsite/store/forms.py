@@ -8,7 +8,7 @@ from .models import Product, Category, News
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
-        fields = ["name", "slug", "parent"]
+        fields = ["name", "parent"]
         widgets = {
             "name": forms.TextInput(attrs={"class": "qty", "style": "width:100%"}),
             "slug": forms.TextInput(attrs={"class": "qty", "style": "width:100%"}),
@@ -19,7 +19,7 @@ class CategoryForm(forms.ModelForm):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = ["category", "name", "slug", "price", "image", "description"]
+        fields = ["category", "name", "price", "image", "description"]
         widgets = {
             "category": forms.Select(attrs={"class": "qty", "style": "width:100%"}),
             "name": forms.TextInput(attrs={"class": "qty", "style": "width:100%"}),
@@ -32,7 +32,7 @@ class ProductForm(forms.ModelForm):
 class NewsForm(forms.ModelForm):
     class Meta:
         model = News
-        fields = ["title", "slug", "body", "is_published"]
+        fields = ["title", "body", "is_published"]
         widgets = {
             "title": forms.TextInput(attrs={"class": "qty", "style": "width:100%"}),
             "slug": forms.TextInput(attrs={"class": "qty", "style": "width:100%"}),

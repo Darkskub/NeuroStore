@@ -24,10 +24,12 @@
           {% endif %}
           {% if request.user.is_superuser %}
             <a href="{% url 'store:panel_dashboard' %}">Панель</a>
+            <a class="nav-link" href="{% url 'admin:index' %}">Админ-панель</a>
           {% endif %}
           <a href="{% url 'logout' %}?next=/">Выйти ({{ request.user.username }})</a>
         {% else %}
           <a href="{% url 'login' %}?next={{ request.path }}">Войти</a>
+          <a class="btn btn-sm btn-primary" href="{% url 'store:signup' %}">Регистрация</a>
         {% endif %}
       </nav>
     </div>

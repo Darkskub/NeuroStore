@@ -1,51 +1,26 @@
 {% extends "base.html" %}
 {% block title %}Главная{% endblock %}
+
 {% block content %}
-<h1>NeuroShop</h1>
-<p class="muted">Короткая аннотация: магазин демонстрационных товаров. Можно посмотреть каталог, добавить товары в корзину и оформить заказ.</p>
+  <h1>Главная</h1>
 
-<h2 style="margin-top:26px;">Последние новости</h2>
-<div class="card" style="padding:16px;">
-  {% if news %}
-    <ul style="margin:0; padding-left:18px;">
-      {% for n in news %}
-        <li>
-          <strong>{{ n.title }}</strong>
-          <span class="muted small"> — {{ n.created_at|date:"d.m.Y" }}</span>
-        </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="muted">Новостей пока нет.</p>
-  {% endif %}
-</div>
+  <section class="card" style="padding:16px;">
+    <h3 style="margin-top:0;">Последние новости</h3>
 
-<h2 style="margin-top:26px;">Товары</h2>
-<div class="grid-3">
-  {% for p in products %}
-  <div class="card">
-    <div class="thumb">
-      {% if p.image %}
-        <img src="{{ p.image.url }}" alt="{{ p.name }}">
-      {% else %}
-        <div class="noimg">Нет изображения</div>
-      {% endif %}
-    </div>
-    <div class="card-body">
-      <h3 class="card-title">{{ p.name }}</h3>
-      <p class="muted">{{ p.description|default:"" }}</p>
-      <div class="price-row">
-        <div class="price">{{ p.price }} ₽</div>
-        <form method="post" action="{% url 'store:cart_add' p.id %}">
-          {% csrf_token %}
-          <input type="number" name="qty" value="1" min="1" class="qty">
-          <button type="submit" class="btn">В корзину</button>
-        </form>
+    {% if news %}
+      <div style="display:grid; gap:12px;">
+        {% for n in news %}
+          <article class="card" style="padding:12px;">
+            <h4 style="margin:0 0 6px 0;">{{ n.title }}</h4>
+            <div class="muted" style="font-size:12px; margin-bottom:8px;">
+              {{ n.created_at|date:"d.m.Y H:i" }}
+            </div>
+            <div>{{ n.body|linebreaks }}</div>
+          </article>
+        {% endfor %}
       </div>
-    </div>
-  </div>
-  {% empty %}
-    <p>Пока нет товаров. Добавьте их через панель администратора.</p>
-  {% endfor %}
-</div>
+    {% else %}
+      <p class="muted">Новостей пока нет.</p>
+    {% endif %}
+  </section>
 {% endblock %}

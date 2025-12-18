@@ -1,10 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import User
+from autoslug import AutoSlugField
 
 
 class Category(models.Model):
     name = models.CharField("Название", max_length=200)
-    slug = models.SlugField("Слаг", unique=True)
+    slug = AutoSlugField("Слаг", populate_from="name", unique=True, always_update=False)
     parent = models.ForeignKey(
         "self",
         on_delete=models.SET_NULL,
@@ -33,7 +34,7 @@ class Product(models.Model):
         verbose_name="Категория"
     )
     name = models.CharField("Название", max_length=200)
-    slug = models.SlugField("Слаг", unique=True)
+    slug = AutoSlugField("Слаг", populate_from="name", unique=True, always_update=False)
     price = models.DecimalField("Цена", max_digits=10, decimal_places=2)
     image = models.ImageField("Изображение", upload_to="products/", blank=True, null=True)
     description = models.TextField("Описание", blank=True)
@@ -49,7 +50,7 @@ class Product(models.Model):
 
 class News(models.Model):
     title = models.CharField("Заголовок", max_length=200)
-    slug = models.SlugField("Слаг", unique=True)
+    slug = AutoSlugField("Слаг", populate_from="title", unique=True, always_update=False)
     body = models.TextField("Текст")
     created_at = models.DateTimeField("Дата", auto_now_add=True)
     is_published = models.BooleanField("Опубликовано", default=True)
@@ -61,6 +62,7 @@ class News(models.Model):
 
     def __str__(self):
         return self.title
+
 
 class ActiveCart(models.Model):
     user = models.OneToOneField(

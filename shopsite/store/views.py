@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 
 from .models import Product, Category, News
 from .cart import Cart
@@ -14,9 +15,8 @@ from .permissions import staff_or_superuser_required, superuser_required
 # ---------------------------
 
 def home(request):
-    products = Product.objects.all()[:9]
     news = News.objects.filter(is_published=True).order_by("-created_at")[:3]
-    return render(request, "store/home.html", {"products": products, "news": news})
+    return render(request, "store/home.html", {"news": news})
 
 
 def product_list(request):
@@ -279,3 +279,15 @@ def panel_user_delete(request, pk: int):
     u.delete()
     messages.success(request, "Пользователь удалён.")
     return redirect("store:panel_users")
+
+def signup(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("store:home")
+    else:
+        form = UserCreationForm()
+    return render(request, "registration/signup.html", {"form": form})
+
