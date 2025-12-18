@@ -8,10 +8,14 @@
   <div style="display:flex;flex-direction:column;gap:12px;">
     <label>Категория {{ form.category }}</label>
     <label>Название {{ form.name }}</label>
-    <label>Слаг {{ form.slug }}</label>
     <label>Цена {{ form.price }}</label>
     <label>Изображение {{ form.image }}</label>
     <label>Описание {{ form.description }}</label>
+
+    <div class="small muted">
+      Слаг формируется автоматически по названию.
+    </div>
+
     <div style="display:flex;gap:10px;">
       <button class="btn" type="submit">Сохранить</button>
       <a class="btn btn-outline" href="{% url 'store:panel_products' %}">Отмена</a>

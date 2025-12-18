@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Заказы клиентов{% endblock %}
+
+{% block content %}
+<h1>Заказы клиентов</h1>
+
+{% if orders %}
+  {% for o in orders %}
+    <section class="card" style="padding:16px;margin-top:16px;">
+
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div>
+          <strong>Заказ #{{ o.id }}</strong><br>
+          <span class="muted">{{ o.created_at|date:"d.m.Y H:i" }}</span><br>
+          <span class="muted">Клиент: {{ o.user.username }}</span>
+        </div>
+
+        <form method="post" action="{% url 'store:manager_order_status' o.id %}">
+          {% csrf_token %}
+          <select name="status" onchange="this.form.submit()">
+            {% for val, label in o.STATUS_CHOICES %}
+              <option value="{{ val }}" {% if o.status == val %}selected{% endif %}>
+                {{ label }}
+              </option>
+            {% endfor %}
+          </select>
+        </form>
+      </div>
+
+      {% if o.comment %}
+        <p class="muted" style="margin-top:10px;">
+          <strong>Комментарий:</strong><br>{{ o.comment }}
+        </p>
+      {% endif %}
+
+      <table class="cart-table" style="margin-top:12px;">
+        <thead>
+          <tr>
+            <th>Товар</th>
+            <th class="right">Цена</th>
+            <th class="right">Кол-во</th>
+            <th class="right">Сумма</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for it in o.items.all %}
+            <tr>
+              <td>{{ it.product.name }}</td>
+              <td class="right">{{ it.price }} ₽</td>
+              <td class="right">{{ it.qty }}</td>
+              <td class="right">{{ it.subtotal }} ₽</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div style="text-align:right;margin-top:10px;">
+        <strong>Итого: {{ o.total }} ₽</strong>
+      </div>
+
+    </section>
+  {% endfor %}
+{% else %}
+  <p class="muted">Заказов пока нет.</p>
+{% endif %}
+{% endblock %}

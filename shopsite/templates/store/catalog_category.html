@@ -18,11 +18,16 @@
       <p class="muted">{{ p.description|default:"" }}</p>
       <div class="price-row">
         <div class="price">{{ p.price }} ₽</div>
-        <form method="post" action="{% url 'store:cart_add' p.id %}">
-          {% csrf_token %}
-          <input type="number" name="qty" value="1" min="1" class="qty">
-          <button type="submit" class="btn">В корзину</button>
-        </form>
+
+        {% if request.user.is_authenticated and not request.user.is_staff and not request.user.is_superuser %}
+          <form method="post" action="{% url 'store:cart_add' p.id %}">
+            {% csrf_token %}
+            <input type="number" name="qty" value="1" min="1" class="qty">
+            <button type="submit" class="btn">В корзину</button>
+          </form>
+        {% else %}
+          <span class="small muted">Войдите как клиент, чтобы добавить в корзину.</span>
+        {% endif %}
       </div>
     </div>
   </div>

@@ -5,49 +5,53 @@
 <h1>Мои заказы</h1>
 
 {% if orders %}
-  <table class="cart-table">
-    <thead>
-      <tr>
-        <th>№</th>
-        <th>Дата</th>
-        <th>Статус</th>
-        <th>Состав</th>
-        <th class="right">Сумма</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for o in orders %}
-      <tr>
-        <td>#{{ o.id }}</td>
-        <td>{{ o.created_at|date:"d.m.Y H:i" }}</td>
-        <td>{{ o.get_status_display }}</td>
-        <td>
-          <ul class="small" style="padding-left:18px;">
-            {% for item in o.items.all %}
-              <li>{{ item.product.name }} — {{ item.qty }} шт. × {{ item.price }} ₽</li>
+  {% for o in orders %}
+    <section class="card" style="padding:16px; margin-top:12px;">
+      <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+        <div>
+          <strong>Заказ #{{ o.id }}</strong>
+          <div class="muted" style="margin-top:4px;">Дата: {{ o.created_at|date:"d.m.Y H:i" }}</div>
+        </div>
+        <div>
+          <span class="badge">{{ o.status }}</span>
+        </div>
+      </div>
+
+      {% if o.comment %}
+        <div class="muted" style="margin-top:10px;"><strong>Комментарий:</strong> {{ o.comment }}</div>
+      {% endif %}
+
+      <div style="margin-top:12px;">
+        <table class="cart-table">
+          <thead>
+            <tr>
+              <th>Товар</th>
+              <th class="right">Цена</th>
+              <th class="right">Кол-во</th>
+              <th class="right">Сумма</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for it in o.items.all %}
+              <tr>
+                <td><strong>{{ it.product.name }}</strong></td>
+                <td class="right">{{ it.price }} ₽</td>
+                <td class="right">{{ it.qty }}</td>
+                <td class="right">{{ it.subtotal }} ₽</td>
+              </tr>
             {% endfor %}
-          </ul>
-          {% if o.comment %}
-            <div class="small muted">Комментарий: {{ o.comment }}</div>
-          {% endif %}
-        </td>
-        <td class="right">{{ o.total_price }} ₽</td>
-        <td class="center">
-          {% if o.status == "new" %}
-            <form method="post" action="{% url 'store:my_order_delete' o.id %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
-            </form>
-          {% else %}
-            <span class="small muted">Редактирование недоступно</span>
-          {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+          </tbody>
+        </table>
+
+        <div style="text-align:right; margin-top:10px;">
+          <strong>Итого: {{ o.total }} ₽</strong>
+        </div>
+      </div>
+    </section>
+  {% endfor %}
 {% else %}
-  <p>Вы ещё не оформляли заказы.</p>
+  <p class="muted">У вас пока нет заказов.</p>
+  <p><a class="btn btn-primary" href="{% url 'store:category_list' %}">Перейти в каталог</a></p>
 {% endif %}
+
 {% endblock %}

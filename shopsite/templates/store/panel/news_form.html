@@ -7,11 +7,14 @@
   {% csrf_token %}
   <div style="display:flex;flex-direction:column;gap:12px;">
     <label>Заголовок {{ form.title }}</label>
-    <label>Слаг {{ form.slug }}</label>
     <label>Текст {{ form.body }}</label>
     <label style="display:flex;align-items:center;gap:10px;">
       {{ form.is_published }} Опубликовано
     </label>
+
+    <div class="small muted">
+      Слаг формируется автоматически по заголовку.
+    </div>
 
     <div style="display:flex;gap:10px;">
       <button class="btn" type="submit">Сохранить</button>

@@ -1,6 +1,7 @@
 # store/cart.py
 from decimal import Decimal
 from .models import Product, ActiveCart, ActiveCartItem
+from .models import Order, OrderItem
 
 
 class Cart:
@@ -80,3 +81,19 @@ class Cart:
         if not self.cart_obj:
             return Decimal("0.00")
         return sum(item.subtotal for item in self.cart_obj.items.all())
+
+    def create_order(self, comment=""):
+        order = Order.objects.create(
+            user=self.user,
+            comment=comment
+        )
+
+        for item in self:
+            OrderItem.objects.create(
+                order=order,
+                product=item["product"],
+                price=item["price"],
+                qty=item["qty"]
+            )
+
+        return order

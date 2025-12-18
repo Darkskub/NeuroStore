@@ -7,8 +7,12 @@
   {% csrf_token %}
   <div style="display:flex;flex-direction:column;gap:12px;">
     <label>Название {{ form.name }}</label>
-    <label>Слаг {{ form.slug }}</label>
     <label>Родитель {{ form.parent }}</label>
+
+    <div class="small muted">
+      Слаг формируется автоматически по названию.
+    </div>
+
     <div style="display:flex;gap:10px;">
       <button class="btn" type="submit">Сохранить</button>
       <a class="btn btn-outline" href="{% url 'store:panel_categories' %}">Отмена</a>

@@ -8,10 +8,10 @@ from .models import Product, Category, News
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
+        # slug НЕ указываем, он AutoSlugField и заполняется сам
         fields = ["name", "parent"]
         widgets = {
             "name": forms.TextInput(attrs={"class": "qty", "style": "width:100%"}),
-            "slug": forms.TextInput(attrs={"class": "qty", "style": "width:100%"}),
             "parent": forms.Select(attrs={"class": "qty", "style": "width:100%"}),
         }
 
@@ -19,11 +19,11 @@ class CategoryForm(forms.ModelForm):
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
+        # slug НЕ указываем, он AutoSlugField и заполняется сам
         fields = ["category", "name", "price", "image", "description"]
         widgets = {
             "category": forms.Select(attrs={"class": "qty", "style": "width:100%"}),
             "name": forms.TextInput(attrs={"class": "qty", "style": "width:100%"}),
-            "slug": forms.TextInput(attrs={"class": "qty", "style": "width:100%"}),
             "price": forms.NumberInput(attrs={"class": "qty", "step": "0.01", "style": "width:100%"}),
             "description": forms.Textarea(attrs={"class": "qty", "rows": 4, "style": "width:100%"}),
         }
@@ -32,10 +32,10 @@ class ProductForm(forms.ModelForm):
 class NewsForm(forms.ModelForm):
     class Meta:
         model = News
+        # slug НЕ указываем, он AutoSlugField и заполняется сам
         fields = ["title", "body", "is_published"]
         widgets = {
             "title": forms.TextInput(attrs={"class": "qty", "style": "width:100%"}),
-            "slug": forms.TextInput(attrs={"class": "qty", "style": "width:100%"}),
             "body": forms.Textarea(attrs={"class": "qty", "rows": 8, "style": "width:100%"}),
             "is_published": forms.CheckboxInput(attrs={"style": "transform:scale(1.2);"}),
         }
