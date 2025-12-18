@@ -1,22 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Каталог{% endblock %}
+{% block title %}Категория: {{ category.name }}{% endblock %}
 {% block content %}
-<h1>Каталог</h1>
+<h1>{{ category.name }}</h1>
 
-<section class="card" style="padding:16px;">
-  <h3 style="margin-top:0;">Категории</h3>
-  {% if categories %}
-    <ul style="margin:0; padding-left:18px;">
-      {% for c in categories %}
-        <li><a href="{% url 'store:catalog_category' c.slug %}">{{ c.name }}</a></li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="muted">Категорий пока нет. Добавьте их в панели администратора.</p>
-  {% endif %}
-</section>
-
-<h2 style="margin-top:26px;">Все товары</h2>
 <div class="grid-3">
   {% for p in products %}
   <div class="card">
@@ -41,7 +27,7 @@
     </div>
   </div>
   {% empty %}
-    <p>Пока нет товаров.</p>
+    <p class="muted">В этой категории пока нет товаров.</p>
   {% endfor %}
 </div>
 {% endblock %}

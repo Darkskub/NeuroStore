@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Товары{% endblock %}
+{% block content %}
+<h1>Товары</h1>
+
+<div style="margin:12px 0;">
+  <a class="btn" href="{% url 'store:panel_product_create' %}">Добавить товар</a>
+</div>
+
+<table class="cart-table">
+  <thead>
+    <tr>
+      <th>Название</th>
+      <th>Категория</th>
+      <th class="right">Цена</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in products %}
+      <tr>
+        <td><strong>{{ p.name }}</strong></td>
+        <td class="muted">{% if p.category %}{{ p.category.name }}{% else %}—{% endif %}</td>
+        <td class="right">{{ p.price }} ₽</td>
+        <td class="right">
+          <a class="btn btn-sm btn-outline" href="{% url 'store:panel_product_edit' p.id %}">Изменить</a>
+          <form method="post" action="{% url 'store:panel_product_delete' p.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-danger" type="submit">Удалить</button>
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4" class="muted">Товаров пока нет.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Панель администратора{% endblock %}
+{% block content %}
+<h1>Панель администратора</h1>
+
+<div class="grid-3">
+  <a class="card" style="padding:16px; text-decoration:none; color:inherit;" href="{% url 'store:panel_categories' %}">
+    <h3 style="margin:0 0 6px;">Категории</h3>
+    <div class="muted small">Добавить / изменить / удалить</div>
+  </a>
+
+  <a class="card" style="padding:16px; text-decoration:none; color:inherit;" href="{% url 'store:panel_products' %}">
+    <h3 style="margin:0 0 6px;">Товары</h3>
+    <div class="muted small">Добавить / изменить / удалить</div>
+  </a>
+
+  <a class="card" style="padding:16px; text-decoration:none; color:inherit;" href="{% url 'store:panel_news' %}">
+    <h3 style="margin:0 0 6px;">Новости</h3>
+    <div class="muted small">Добавить / изменить / удалить</div>
+  </a>
+
+  <a class="card" style="padding:16px; text-decoration:none; color:inherit;" href="{% url 'store:panel_users' %}">
+    <h3 style="margin:0 0 6px;">Пользователи</h3>
+    <div class="muted small">Создать менеджера / удалить</div>
+  </a>
+</div>
+{% endblock %}

@@ -1,82 +1,54 @@
-# store/views.py
-from decimal import Decimal
-
-from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
+from django.contrib import messages
+from django.contrib.auth.models import User
 
+from .models import Product, Category, News
 from .cart import Cart
-from .forms import ProductForm, UserRegisterForm
-from .models import Category, Product, News, Order, OrderItem, ActiveCart
+from .forms import ProductForm, CategoryForm, NewsForm, ManagerCreateForm
+from .permissions import staff_or_superuser_required, superuser_required
 
 
-# ====== РОЛИ ======
-
-def is_client(user):
-    # Клиент — залогиненный пользователь, который не staff и не superuser
-    return user.is_authenticated and not user.is_staff and not user.is_superuser
-
-
-def is_manager(user):
-    # Менеджер — staff, но не superuser
-    return user.is_authenticated and user.is_staff and not user.is_superuser
-
-
-def is_admin(user):
-    # Администратор — superuser
-    return user.is_authenticated and user.is_superuser
-
-
-# ====== ГЛАВНАЯ, НОВОСТИ, КОНТАКТЫ, КАТАЛОГ ======
+# ---------------------------
+# ПУБЛИЧНЫЕ СТРАНИЦЫ
+# ---------------------------
 
 def home(request):
-    last_news = News.objects.filter(is_published=True)[:3]
-    return render(request, "store/home.html", {"last_news": last_news})
+    products = Product.objects.all()[:9]
+    news = News.objects.filter(is_published=True).order_by("-created_at")[:3]
+    return render(request, "store/home.html", {"products": products, "news": news})
+
+
+def product_list(request):
+    products = Product.objects.all()
+    categories = Category.objects.filter(parent__isnull=True).order_by("name")
+    return render(request, "store/product_list.html", {"products": products, "categories": categories})
+
+
+def catalog_category(request, slug: str):
+    category = get_object_or_404(Category, slug=slug)
+    products = Product.objects.filter(category=category)
+    return render(request, "store/catalog_category.html", {"category": category, "products": products})
 
 
 def news_list(request):
-    news = News.objects.filter(is_published=True)
-    return render(request, "store/news_list.html", {"news_list": news})
+    news = News.objects.filter(is_published=True).order_by("-created_at")
+    return render(request, "store/news_list.html", {"news": news})
 
 
-def news_detail(request, slug: str):
-    news_item = get_object_or_404(News, slug=slug, is_published=True)
-    return render(request, "store/news_detail.html", {"news": news_item})
+def about(request):
+    return render(request, "store/about.html")
 
 
-def contacts(request):
-    return render(request, "store/contacts.html")
+# ---------------------------
+# КОРЗИНА / ОФОРМЛЕНИЕ
+# ---------------------------
 
-
-def category_list(request):
-    categories = Category.objects.all()
-    return render(request, "store/category_list.html", {"categories": categories})
-
-
-def category_detail(request, category_slug: str):
-    category = get_object_or_404(Category, slug=category_slug)
-    products = category.products.all()
-    return render(
-        request,
-        "store/category_detail.html",
-        {"category": category, "products": products},
-    )
-
-
-# ====== КОРЗИНА / ОФОРМЛЕНИЕ — КЛИЕНТ ======
-
-@login_required
-@user_passes_test(is_client)
 def cart_detail(request):
     cart = Cart(request)
     return render(request, "store/cart.html", {"cart": cart})
 
 
-@login_required
-@user_passes_test(is_client)
 @require_POST
 def cart_add(request, product_id: int):
     cart = Cart(request)
@@ -89,8 +61,6 @@ def cart_add(request, product_id: int):
     return redirect("store:cart_detail")
 
 
-@login_required
-@user_passes_test(is_client)
 @require_POST
 def cart_set(request, product_id: int):
     cart = Cart(request)
@@ -103,8 +73,6 @@ def cart_set(request, product_id: int):
     return redirect("store:cart_detail")
 
 
-@login_required
-@user_passes_test(is_client)
 @require_POST
 def cart_remove(request, product_id: int):
     cart = Cart(request)
@@ -112,200 +80,202 @@ def cart_remove(request, product_id: int):
     return redirect("store:cart_detail")
 
 
-@login_required
-@user_passes_test(is_client)
 def checkout(request):
     cart = Cart(request)
-
     if request.method == "POST":
-        if cart.total_qty() == 0:
-            messages.error(request, "Корзина пуста.")
-            return redirect("store:cart_detail")
-
-        comment = request.POST.get("comment", "").strip()
-        order = Order.objects.create(user=request.user, comment=comment)
-
-        for item in cart:
-            OrderItem.objects.create(
-                order=order,
-                product=item["product"],
-                price=item["price"],
-                qty=item["qty"],
-            )
-
+        # тут позже можно создавать Order/OrderItem в БД
         cart.clear()
-        return render(
-            request,
-            "store/checkout.html",
-            {"success": True, "order": order},
-        )
-
-    return render(
-        request,
-        "store/checkout.html",
-        {"success": False},
-    )
+        return render(request, "store/checkout.html", {"success": True})
+    return render(request, "store/checkout.html", {"success": False})
 
 
-# ====== МОИ ЗАКАЗЫ — КЛИЕНТ ======
+# ---------------------------
+# МЕНЕДЖЕРСКИЕ СТРАНИЦЫ (доступ: менеджер ИЛИ админ)
+# ---------------------------
 
-@login_required
-@user_passes_test(is_client)
-def my_orders(request):
-    orders = request.user.orders.all()
-    return render(request, "store/my_orders.html", {"orders": orders})
-
-
-@login_required
-@user_passes_test(is_client)
-@require_POST
-def my_order_delete(request, order_id: int):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
-    if order.status == Order.STATUS_NEW:
-        order.delete()
-        messages.success(request, "Заказ удалён.")
-    else:
-        messages.error(request, "Можно удалять только новые заказы.")
-    return redirect("store:my_orders")
+@staff_or_superuser_required
+def manager_dashboard(request):
+    return render(request, "store/manager/dashboard.html")
 
 
-# ====== ЗАКАЗЫ — МЕНЕДЖЕР ======
-
-@login_required
-@user_passes_test(is_manager)
-def manager_orders(request):
-    orders = (
-        Order.objects.select_related("user")
-        .prefetch_related("items", "items__product")
-        .all()
-    )
-    return render(request, "store/manager_orders.html", {"orders": orders})
+# пример: здесь позже подключишь реальные модели Order/ActiveCart
+@staff_or_superuser_required
+def manager_stub_orders(request):
+    return render(request, "store/manager/orders_stub.html")
 
 
-@login_required
-@user_passes_test(is_manager)
-@require_POST
-def manager_set_status(request, order_id: int):
-    order = get_object_or_404(Order, id=order_id)
-    new_status = request.POST.get("status")
-    valid_statuses = {choice[0] for choice in Order.STATUS_CHOICES}
-    if new_status in valid_statuses:
-        order.status = new_status
-        order.save()
-        messages.success(request, f"Статус заказа #{order.id} изменён.")
-    else:
-        messages.error(request, "Некорректный статус.")
-    return redirect("store:manager_orders")
+# ---------------------------
+# ПАНЕЛЬ АДМИНИСТРАТОРА ВНУТРИ САЙТА (только superuser)
+# ---------------------------
+
+@superuser_required
+def panel_dashboard(request):
+    return render(request, "store/panel/dashboard.html")
 
 
-# ====== КОРЗИНЫ КЛИЕНТОВ — МЕНЕДЖЕР ======
+# ----- Категории -----
 
-@login_required
-@user_passes_test(is_manager)
-def manager_carts(request):
-    """
-    Список всех корзин клиентов: кто, сколько товаров, на какую сумму.
-    """
-    carts = (
-        ActiveCart.objects.select_related("user")
-        .prefetch_related("items", "items__product")
-        .all()
-        .order_by("user__username")
-    )
-    return render(request, "store/manager_carts.html", {"carts": carts})
+@superuser_required
+def panel_categories(request):
+    cats = Category.objects.select_related("parent").order_by("name")
+    return render(request, "store/panel/categories_list.html", {"cats": cats})
 
 
-@login_required
-@user_passes_test(is_manager)
-def manager_cart_detail(request, user_id: int):
-    """
-    Просмотр и управление корзиной конкретного клиента.
-    Менеджер может изменить количества, удалить позиции или очистить корзину.
-    """
-    cart_user = get_object_or_404(User, id=user_id)
-    cart_obj, _ = ActiveCart.objects.get_or_create(user=cart_user)
-
+@superuser_required
+def panel_category_create(request):
     if request.method == "POST":
-        changed = False
-
-        # Очистка корзины целиком
-        if "clear_cart" in request.POST:
-            cart_obj.items.all().delete()
-            changed = True
-        else:
-            # Обновление количеств по каждому item
-            for item in cart_obj.items.all():
-                field_name = f"qty_{item.id}"
-                if field_name in request.POST:
-                    raw_val = request.POST.get(field_name, "").strip()
-                    try:
-                        qty = int(raw_val)
-                    except ValueError:
-                        qty = item.qty
-
-                    if qty <= 0:
-                        item.delete()
-                        changed = True
-                    elif qty != item.qty:
-                        item.qty = qty
-                        item.save()
-                        changed = True
-
-        if changed:
-            messages.success(request, "Корзина клиента обновлена.")
-        else:
-            messages.info(request, "Изменений не обнаружено.")
-
-        return redirect("store:manager_cart_detail", user_id=cart_user.id)
-
-    return render(
-        request,
-        "store/manager_cart_detail.html",
-        {
-            "cart_user": cart_user,
-            "cart": cart_obj,
-        },
-    )
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Категория добавлена.")
+            return redirect("store:panel_categories")
+    else:
+        form = CategoryForm()
+    return render(request, "store/panel/category_form.html", {"form": form, "mode": "create"})
 
 
-# ====== УПРАВЛЕНИЕ ТОВАРАМИ — ПЕРСОНАЛ ======
+@superuser_required
+def panel_category_edit(request, pk: int):
+    obj = get_object_or_404(Category, pk=pk)
+    if request.method == "POST":
+        form = CategoryForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Категория обновлена.")
+            return redirect("store:panel_categories")
+    else:
+        form = CategoryForm(instance=obj)
+    return render(request, "store/panel/category_form.html", {"form": form, "mode": "edit", "obj": obj})
 
-@staff_member_required
-def product_create(request):
-    """
-    Страница для админ-персонала: добавить товар без захода в /admin.
-    Доступно только is_staff пользователям (Менеджер/Админ).
-    """
+
+@superuser_required
+@require_POST
+def panel_category_delete(request, pk: int):
+    obj = get_object_or_404(Category, pk=pk)
+    try:
+        obj.delete()
+        messages.success(request, "Категория удалена.")
+    except Exception:
+        messages.error(request, "Нельзя удалить категорию (возможно, в ней есть товары).")
+    return redirect("store:panel_categories")
+
+
+# ----- Товары -----
+
+@superuser_required
+def panel_products(request):
+    products = Product.objects.select_related("category").order_by("name")
+    return render(request, "store/panel/products_list.html", {"products": products})
+
+
+@superuser_required
+def panel_product_create(request):
     if request.method == "POST":
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
-            product = form.save()
-            messages.success(request, f"Товар «{product.name}» добавлен.")
-            return redirect("store:category_list")
+            form.save()
+            messages.success(request, "Товар добавлен.")
+            return redirect("store:panel_products")
     else:
         form = ProductForm()
-    return render(request, "store/product_form.html", {"form": form})
+    return render(request, "store/panel/product_form.html", {"form": form, "mode": "create"})
 
 
-# ====== РЕГИСТРАЦИЯ КЛИЕНТА ======
-
-def register(request):
-    """
-    Регистрация нового пользователя со статусом «Клиент».
-    """
-    if request.user.is_authenticated:
-        return redirect("store:home")
-
+@superuser_required
+def panel_product_edit(request, pk: int):
+    obj = get_object_or_404(Product, pk=pk)
     if request.method == "POST":
-        form = UserRegisterForm(request.POST)
+        form = ProductForm(request.POST, request.FILES, instance=obj)
         if form.is_valid():
-            user = form.save(commit=False)
-            user.is_staff = False
-            user.is_superuser = False
-            user.save()
-            messages.success(request, "Регистрация выполнена. Войдите под своим логином.")
-            return redirect("login")
+            form.save()
+            messages.success(request, "Товар обновлён.")
+            return redirect("store:panel_products")
     else:
-        form = UserRegisterForm()
+        form = ProductForm(instance=obj)
+    return render(request, "store/panel/product_form.html", {"form": form, "mode": "edit", "obj": obj})
 
-    return render(request, "store/register.html", {"form": form})
+
+@superuser_required
+@require_POST
+def panel_product_delete(request, pk: int):
+    obj = get_object_or_404(Product, pk=pk)
+    obj.delete()
+    messages.success(request, "Товар удалён.")
+    return redirect("store:panel_products")
+
+
+# ----- Новости -----
+
+@superuser_required
+def panel_news(request):
+    news = News.objects.order_by("-created_at")
+    return render(request, "store/panel/news_list.html", {"news": news})
+
+
+@superuser_required
+def panel_news_create(request):
+    if request.method == "POST":
+        form = NewsForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Новость добавлена.")
+            return redirect("store:panel_news")
+    else:
+        form = NewsForm()
+    return render(request, "store/panel/news_form.html", {"form": form, "mode": "create"})
+
+
+@superuser_required
+def panel_news_edit(request, pk: int):
+    obj = get_object_or_404(News, pk=pk)
+    if request.method == "POST":
+        form = NewsForm(request.POST, instance=obj)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Новость обновлена.")
+            return redirect("store:panel_news")
+    else:
+        form = NewsForm(instance=obj)
+    return render(request, "store/panel/news_form.html", {"form": form, "mode": "edit", "obj": obj})
+
+
+@superuser_required
+@require_POST
+def panel_news_delete(request, pk: int):
+    obj = get_object_or_404(News, pk=pk)
+    obj.delete()
+    messages.success(request, "Новость удалена.")
+    return redirect("store:panel_news")
+
+
+# ----- Пользователи -----
+
+@superuser_required
+def panel_users(request):
+    users = User.objects.order_by("username")
+    return render(request, "store/panel/users_list.html", {"users": users})
+
+
+@superuser_required
+def panel_user_create_manager(request):
+    if request.method == "POST":
+        form = ManagerCreateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Менеджер создан.")
+            return redirect("store:panel_users")
+    else:
+        form = ManagerCreateForm()
+    return render(request, "store/panel/user_manager_form.html", {"form": form})
+
+
+@superuser_required
+@require_POST
+def panel_user_delete(request, pk: int):
+    u = get_object_or_404(User, pk=pk)
+    if u.is_superuser:
+        messages.error(request, "Нельзя удалить администратора.")
+        return redirect("store:panel_users")
+    u.delete()
+    messages.success(request, "Пользователь удалён.")
+    return redirect("store:panel_users")

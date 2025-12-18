@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block title %}Вход{% endblock %}
-
 {% block content %}
 <h1>Вход</h1>
 
@@ -13,17 +12,15 @@
     <label>Пароль
       <input type="password" name="password" required class="qty" style="width:100%;">
     </label>
+
     {% if form.errors %}
       <div class="alert success" style="background:#351212;border-color:#7a1f1f;">
         Неверный логин или пароль.
       </div>
     {% endif %}
+
     <button type="submit" class="btn">Войти</button>
   </div>
   <input type="hidden" name="next" value="{{ next }}">
 </form>
-
-<p class="small" style="margin-top:10px;">
-  Нет аккаунта? <a href="{% url 'store:register' %}">Зарегистрироваться</a>
-</p>
 {% endblock %}

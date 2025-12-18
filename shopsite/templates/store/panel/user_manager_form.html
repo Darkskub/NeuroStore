@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Создать менеджера{% endblock %}
+{% block content %}
+<h1>Создать менеджера</h1>
+
+<form method="post" class="card" style="max-width:520px;padding:16px;">
+  {% csrf_token %}
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <label>Логин {{ form.username }}</label>
+    <label>Пароль {{ form.password1 }}</label>
+    <label>Повтор пароля {{ form.password2 }}</label>
+
+    <div style="display:flex;gap:10px;">
+      <button class="btn" type="submit">Создать</button>
+      <a class="btn btn-outline" href="{% url 'store:panel_users' %}">Отмена</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

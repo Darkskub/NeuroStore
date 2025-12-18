@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Раздел менеджера{% endblock %}
+{% block content %}
+<h1>Раздел менеджера</h1>
+
+<div class="grid-3">
+  <a class="card" style="padding:16px; text-decoration:none; color:inherit;" href="{% url 'store:manager_orders' %}">
+    <h3 style="margin:0 0 6px;">Заказы</h3>
+    <div class="muted small">Просмотр и управление</div>
+  </a>
+</div>
+{% endblock %}

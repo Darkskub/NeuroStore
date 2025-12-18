@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Новости (панель){% endblock %}
+{% block content %}
+<h1>Новости</h1>
+
+<div style="margin:12px 0;">
+  <a class="btn" href="{% url 'store:panel_news_create' %}">Добавить новость</a>
+</div>
+
+<table class="cart-table">
+  <thead>
+    <tr>
+      <th>Заголовок</th>
+      <th>Дата</th>
+      <th>Опубликовано</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for n in news %}
+      <tr>
+        <td><strong>{{ n.title }}</strong></td>
+        <td class="muted">{{ n.created_at|date:"d.m.Y H:i" }}</td>
+        <td class="muted">{% if n.is_published %}Да{% else %}Нет{% endif %}</td>
+        <td class="right">
+          <a class="btn btn-sm btn-outline" href="{% url 'store:panel_news_edit' n.id %}">Изменить</a>
+          <form method="post" action="{% url 'store:panel_news_delete' n.id %}" style="display:inline;">
+            {% csrf_token %}
+            <button class="btn btn-sm btn-danger" type="submit">Удалить</button>
+          </form>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4" class="muted">Новостей пока нет.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

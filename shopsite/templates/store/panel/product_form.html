@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Товар{% endblock %}
+{% block content %}
+<h1>{% if mode == "create" %}Добавить товар{% else %}Изменить товар{% endif %}</h1>
+
+<form method="post" enctype="multipart/form-data" class="card" style="max-width:720px;padding:16px;">
+  {% csrf_token %}
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    <label>Категория {{ form.category }}</label>
+    <label>Название {{ form.name }}</label>
+    <label>Слаг {{ form.slug }}</label>
+    <label>Цена {{ form.price }}</label>
+    <label>Изображение {{ form.image }}</label>
+    <label>Описание {{ form.description }}</label>
+    <div style="display:flex;gap:10px;">
+      <button class="btn" type="submit">Сохранить</button>
+      <a class="btn btn-outline" href="{% url 'store:panel_products' %}">Отмена</a>
+    </div>
+  </div>
+</form>
+{% endblock %}

@@ -4,50 +4,43 @@ from . import views
 app_name = "store"
 
 urlpatterns = [
-    # Главная
+    # публичные
     path("", views.home, name="home"),
-
-    # Новости
+    path("catalog/", views.product_list, name="product_list"),
+    path("catalog/<slug:slug>/", views.catalog_category, name="catalog_category"),
     path("news/", views.news_list, name="news_list"),
-    path("news/<slug:slug>/", views.news_detail, name="news_detail"),
+    path("about/", views.about, name="about"),
 
-    # Контакты
-    path("contacts/", views.contacts, name="contacts"),
-
-    # Каталог
-    path("catalog/", views.category_list, name="category_list"),
-    path("catalog/<slug:category_slug>/", views.category_detail, name="category_detail"),
-
-    # Корзина / заказ (клиент)
+    # корзина
     path("cart/", views.cart_detail, name="cart_detail"),
+    path("checkout/", views.checkout, name="checkout"),
     path("cart/add/<int:product_id>/", views.cart_add, name="cart_add"),
     path("cart/remove/<int:product_id>/", views.cart_remove, name="cart_remove"),
     path("cart/set/<int:product_id>/", views.cart_set, name="cart_set"),
-    path("checkout/", views.checkout, name="checkout"),
 
-    # Мои заказы (клиент)
-    path("my-orders/", views.my_orders, name="my_orders"),
-    path("my-orders/delete/<int:order_id>/", views.my_order_delete, name="my_order_delete"),
+    # менеджер (и админ тоже)
+    path("manager/", views.manager_dashboard, name="manager_dashboard"),
+    path("manager/orders/", views.manager_stub_orders, name="manager_orders"),
 
-    # Заказы (менеджер)
-    path("manager/orders/", views.manager_orders, name="manager_orders"),
-    path(
-        "manager/orders/<int:order_id>/set-status/",
-        views.manager_set_status,
-        name="manager_set_status",
-    ),
+    # панель администратора ВНУТРИ сайта
+    path("panel/", views.panel_dashboard, name="panel_dashboard"),
 
-    # Корзины клиентов (менеджер)
-    path("manager/carts/", views.manager_carts, name="manager_carts"),
-    path(
-        "manager/carts/<int:user_id>/",
-        views.manager_cart_detail,
-        name="manager_cart_detail",
-    ),
+    path("panel/categories/", views.panel_categories, name="panel_categories"),
+    path("panel/categories/new/", views.panel_category_create, name="panel_category_create"),
+    path("panel/categories/<int:pk>/edit/", views.panel_category_edit, name="panel_category_edit"),
+    path("panel/categories/<int:pk>/delete/", views.panel_category_delete, name="panel_category_delete"),
 
-    # Управление товарами (персонал)
-    path("manage/products/new/", views.product_create, name="product_create"),
+    path("panel/products/", views.panel_products, name="panel_products"),
+    path("panel/products/new/", views.panel_product_create, name="panel_product_create"),
+    path("panel/products/<int:pk>/edit/", views.panel_product_edit, name="panel_product_edit"),
+    path("panel/products/<int:pk>/delete/", views.panel_product_delete, name="panel_product_delete"),
 
-    # Регистрация клиента
-    path("register/", views.register, name="register"),
+    path("panel/news/", views.panel_news, name="panel_news"),
+    path("panel/news/new/", views.panel_news_create, name="panel_news_create"),
+    path("panel/news/<int:pk>/edit/", views.panel_news_edit, name="panel_news_edit"),
+    path("panel/news/<int:pk>/delete/", views.panel_news_delete, name="panel_news_delete"),
+
+    path("panel/users/", views.panel_users, name="panel_users"),
+    path("panel/users/new-manager/", views.panel_user_create_manager, name="panel_user_create_manager"),
+    path("panel/users/<int:pk>/delete/", views.panel_user_delete, name="panel_user_delete"),
 ]

@@ -1,32 +1,51 @@
 {% extends "base.html" %}
-{% block title %}NeuroShop — Главная{% endblock %}
-
+{% block title %}Главная{% endblock %}
 {% block content %}
 <h1>NeuroShop</h1>
-<p class="muted">
-  NeuroShop — условная организация, занимающаяся продажей цифровых товаров и сервисов
-  на основе нейросетевых технологий. Данный сайт является учебным примером интернет-магазина,
-  демонстрирующим работу каталога, корзины и системы ролей (Гость, Клиент, Менеджер, Администратор).
-</p>
+<p class="muted">Короткая аннотация: магазин демонстрационных товаров. Можно посмотреть каталог, добавить товары в корзину и оформить заказ.</p>
 
-<h2 style="margin-top:24px;">Последние новости</h2>
+<h2 style="margin-top:26px;">Последние новости</h2>
+<div class="card" style="padding:16px;">
+  {% if news %}
+    <ul style="margin:0; padding-left:18px;">
+      {% for n in news %}
+        <li>
+          <strong>{{ n.title }}</strong>
+          <span class="muted small"> — {{ n.created_at|date:"d.m.Y" }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">Новостей пока нет.</p>
+  {% endif %}
+</div>
 
-{% if last_news %}
-  <div class="grid-3">
-    {% for n in last_news %}
-      <div class="card">
-        <div class="card-body">
-          <h3 class="card-title">{{ n.title }}</h3>
-          <div class="small muted">{{ n.created_at|date:"d.m.Y H:i" }}</div>
-          <p class="small">
-            {{ n.body|truncatechars:140 }}
-          </p>
-          <a class="btn btn-sm" href="{% url 'store:news_detail' n.slug %}">Подробнее</a>
-        </div>
+<h2 style="margin-top:26px;">Товары</h2>
+<div class="grid-3">
+  {% for p in products %}
+  <div class="card">
+    <div class="thumb">
+      {% if p.image %}
+        <img src="{{ p.image.url }}" alt="{{ p.name }}">
+      {% else %}
+        <div class="noimg">Нет изображения</div>
+      {% endif %}
+    </div>
+    <div class="card-body">
+      <h3 class="card-title">{{ p.name }}</h3>
+      <p class="muted">{{ p.description|default:"" }}</p>
+      <div class="price-row">
+        <div class="price">{{ p.price }} ₽</div>
+        <form method="post" action="{% url 'store:cart_add' p.id %}">
+          {% csrf_token %}
+          <input type="number" name="qty" value="1" min="1" class="qty">
+          <button type="submit" class="btn">В корзину</button>
+        </form>
       </div>
-    {% endfor %}
+    </div>
   </div>
-{% else %}
-  <p>Пока нет новостей.</p>
-{% endif %}
+  {% empty %}
+    <p>Пока нет товаров. Добавьте их через панель администратора.</p>
+  {% endfor %}
+</div>
 {% endblock %}
